@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Carga de Pintura</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="container">
+
+    <div class="horizontal-sections">
+        <div class="form-section">
+            <h2>Crear Carga</h2>
+            <form id="formCarga">
+                <label for="folio">Folio (se genera automáticamente):</label>
+                <input type="text" id="folio" required />
+
+                <label for="codigo">Código de Pintura:</label>
+                <input type="text" id="codigo" required />
+
+                <div id="infoProducto" style="display:none;">
+                    <p><strong>Descripción:</strong> <span id="descProducto"></span></p>
+                    <p><strong>Base:</strong> <span id="baseProducto"></span></p>
+                    <p><strong>Categoría:</strong> <span id="categoriaProducto"></span></p>
+                    <p><strong>Prioridad:</strong> <span id="prioridadProducto"></span></p>
+                </div>
+
+                <fieldset>
+                    <legend>Distribución</legend>
+                    <label for="medios">Medios (0.5 litros c/u):</label>
+                    <input type="number" id="medios" min="0" value="0" />
+
+                    <label for="litros">Litros (1 litro c/u):</label>
+                    <input type="number" id="litros" min="0" value="0" />
+
+                    <label for="galones">Galones (4 litros c/u):</label>
+                    <input type="number" id="galones" min="0" value="0" />
+
+                    <label for="cubetas">Cubetas (19 litros c/u):</label>
+                    <input type="number" id="cubetas" min="0" value="0" />
+
+                    <p>Total litros en distribución: <span id="totalDistribucion">0</span></p>
+                </fieldset>
+
+                <button type="submit">Agregar Carga</button>
+                <p id="mensaje"></p>
+            </form>
+
+            <button id="exportarWord" style="margin-top:10px;">Exportar 4 tablas a Word</button>
+
+            <button id="btnRecomendar" style="margin-top:10px; background-color:#28a745; color:white; border:none; padding:10px 20px; cursor:pointer;">
+                Recomendar Programación
+            </button>
+
+        </div>
+
+        <div class="distribution-section">
+            <h3>Vista previa distribución</h3>
+            <table id="tablaDistribucion">
+                <thead>
+                    <tr>
+                        <th>Unidad</th>
+                        <th>Cantidad</th>
+                        <th>Litros por unidad</th>
+                        <th>Litros totales</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Medios</td>
+                        <td id="cantMedios">0</td>
+                        <td>0.5</td>
+                        <td id="litrosMedios">0</td>
+                    </tr>
+                    <tr>
+                        <td>Litros</td>
+                        <td id="cantLitros">0</td>
+                        <td>1</td>
+                        <td id="litrosLitros">0</td>
+                    </tr>
+                    <tr>
+                        <td>Galones</td>
+                        <td id="cantGalones">0</td>
+                        <td>4</td>
+                        <td id="litrosGalones">0</td>
+                    </tr>
+                    <tr>
+                        <td>Cubetas</td>
+                        <td id="cantCubetas">0</td>
+                        <td>19</td>
+                        <td id="litrosCubetas">0</td>
+                    </tr>
+                    <tr style="font-weight: bold; background: #eee;">
+                        <td colspan="3" style="text-align: right; padding-right: 10px;">Total litros</td>
+                        <td id="litrosTotalTabla">0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="tablaRondas" class="tabla-rondas"></div>
+</div>
+<button id="exportarVinilicas" style="margin-top:10px; background-color:#007bff; color:white; border:none; padding:10px 20px; cursor:pointer;">
+    Exportar reporte de vinílicas
+</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="js/script.js"></script>
+
+</body>
+</html>
