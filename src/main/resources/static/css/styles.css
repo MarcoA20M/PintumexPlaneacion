@@ -1,0 +1,380 @@
+/*
+  CSS Mejorado para la Carga de Pintura
+  ------------------------------------
+  - Paleta de colores moderna y coherente con variables CSS.
+  - Tipografía 'Inter' para mayor legibilidad.
+  - Transiciones suaves para una experiencia de usuario fluida.
+  - Sombra sutil para dar profundidad a los elementos.
+  - Estilos responsivos para que se vea bien en dispositivos móviles.
+*/
+
+/* --- Variables de colores y estilos --- */
+:root {
+  --primary-color: #3f51b5; /* Azul índigo principal */
+  --primary-color-dark: #303f9f;
+  --secondary-color: #ff9800; /* Naranja para detalles */
+  --bg-color-light: #f7f9fc; /* Fondo claro y suave */
+  --bg-color-medium: #eef2f7; /* Fondo para secciones */
+  --text-color-dark: #333;
+  --text-color-light: #fff;
+  --border-color: #ddd;
+  --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* Sombra más específica para tarjetas */
+  --card-hover-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); /* Sombra al pasar el ratón */
+}
+
+/* --- Estilos base --- */
+body {
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-color-light);
+  color: var(--text-color-dark);
+}
+
+.container {
+  max-width: 1400px;
+  margin: 30px auto;
+  padding: 30px;
+  background: var(--text-color-light);
+  border-radius: 12px;
+  box-shadow: var(--shadow-subtle);
+  transition: all 0.3s ease;
+}
+
+.horizontal-sections {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.form-section, .distribution-section {
+  flex: 1;
+  min-width: 300px;
+  padding: 25px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--bg-color-medium);
+}
+
+h2 {
+  font-size: 24px;
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--primary-color);
+  padding-bottom: 15px;
+  margin-top: 0;
+  font-weight: 600;
+}
+
+/* --- Estilos del formulario --- */
+form label {
+  display: block;
+  margin-top: 15px;
+  font-weight: 600;
+  color: var(--text-color-dark);
+}
+
+form input[type="text"], form input[type="number"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  margin-top: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+form input[type="text"]:focus, form input[type="number"]:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.2);
+}
+
+form button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 25px;
+  background-color: var(--primary-color);
+  color: var(--text-color-light);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px; /* Separación entre botones */
+}
+
+form button#exportarWord {
+    background-color: #007bff;
+}
+
+form button#exportarWord:hover {
+    background-color: #0056b3;
+}
+
+form button:hover {
+  background-color: var(--primary-color-dark);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+form button:active {
+  transform: translateY(1px);
+}
+
+#infoProducto {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: var(--bg-color-medium);
+  border-radius: 6px;
+  border-left: 4px solid var(--secondary-color);
+  display: none; /* Mantener la propiedad display para JS */
+}
+
+/* --- Fieldset y Legend --- */
+fieldset {
+  margin-top: 25px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 15px;
+  background-color: var(--text-color-light);
+}
+
+legend {
+  font-weight: 600;
+  padding: 0 10px;
+  color: var(--text-color-dark);
+}
+
+/* --- Estilos de la tabla de distribución --- */
+table#tablaDistribucion {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 15px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+table#tablaDistribucion th, table#tablaDistribucion td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+table#tablaDistribucion tr:last-child td {
+  border-bottom: none;
+}
+
+table#tablaDistribucion tr:nth-child(even) {
+  background-color: var(--bg-color-light);
+}
+
+table#tablaDistribucion th {
+  background-color: var(--primary-color);
+  color: var(--text-color-light);
+  font-weight: 600;
+}
+
+/* --- Estilos de la tabla de rondas (Grid) --- */
+.tabla-rondas {
+  display: grid;
+  grid-template-columns: 120px repeat(4, 1fr);
+  gap: 1px;
+  background-color: var(--border-color);
+  border: 1px solid var(--border-color);
+  text-align: center;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+.encabezado, .maquina, .dropzone {
+  background-color: var(--text-color-light);
+  padding: 15px 10px;
+  border: none;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.encabezado {
+  font-weight: 600;
+  background-color: var(--primary-color);
+  color: var(--text-color-light);
+}
+
+.maquina {
+  font-weight: 600;
+  background-color: var(--bg-color-medium);
+}
+
+.dropzone.over {
+  background-color: #d1e7ff;
+  border: 2px dashed var(--primary-color);
+}
+
+/* --- Estilos de las tarjetas (drag & drop) MEJORADOS --- */
+.carga-card {
+  /* Fondo más suave con un ligero gradiente */
+  background: linear-gradient(135deg, #f8fafd 0%, #edf2f7 100%);
+  border: 1px solid #d1e4f9; /* Borde más claro y acorde */
+  border-left: 6px solid var(--primary-color); /* Borde lateral más grueso y principal */
+  padding: 15px; /* Más espacio interno */
+  border-radius: 10px; /* Bordes más redondeados */
+  margin-bottom: 12px; /* Mayor separación entre tarjetas */
+  cursor: grab;
+  position: relative;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-color-dark);
+  box-shadow: var(--card-shadow); /* Sombra inicial suave */
+  transition: all 0.3s ease-out; /* Transición más pronunciada para hover */
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* Espacio entre los elementos de texto dentro de la tarjeta */
+  text-align: left; /* Asegura que el texto esté alineado a la izquierda */
+}
+
+.carga-card:hover {
+  transform: translateY(-4px); /* Levantamiento más notable al pasar el ratón */
+  box-shadow: var(--card-hover-shadow); /* Sombra más fuerte al pasar el ratón */
+  border-left-color: var(--primary-color-dark); /* Color del borde lateral cambia un poco */
+}
+
+/* Nuevo contenedor para el código y el círculo de litros */
+.carga-card .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Alinea los elementos al inicio */
+    margin-bottom: 8px; /* Espacio debajo del encabezado */
+    position: relative; /* Para que el círculo se posicione con respecto a esto */
+}
+
+.carga-card .main-code {
+    font-size: 1.2em; /* Código más grande y prominente */
+    font-weight: 700;
+    color: var(--primary-color-dark); /* Color más oscuro para destacar */
+    flex-grow: 1; /* Permite que ocupe el espacio restante */
+}
+
+/* Ajustes para el círculo de litros dentro del nuevo header-content */
+.litros-total-circulo {
+  position: absolute; /* Cambia a absolute para posicionarlo con respecto al .header-content */
+  top: -15px; /* Ajuste más arriba */
+  right: -15px; /* Ajuste más a la derecha */
+  background-color: var(--secondary-color); /* Naranja vibrante */
+  color: var(--text-color-dark); /* Texto oscuro para mejor contraste */
+  border-radius: 50%;
+  width: 45px; /* Círculo más grande */
+  height: 45px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px; /* Tamaño de fuente ligeramente mayor */
+  font-weight: bold;
+  border: 4px solid var(--text-color-light); /* Borde blanco más pronunciado */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.25); /* Sombra más fuerte para el círculo */
+  z-index: 10; /* Asegura que esté por encima de la tarjeta */
+  line-height: 1.2; /* Ajuste de línea para el texto dentro del círculo */
+}
+
+/* Nuevo estilo para los detalles de distribución */
+.distribution-details-new {
+    display: flex;
+    flex-wrap: wrap; /* Permite que los elementos se envuelvan */
+    gap: 10px; /* Espacio entre los elementos de distribución */
+    margin-top: 5px; /* Espacio superior */
+    padding-top: 5px;
+    border-top: 1px dashed #e0e0e0; /* Línea divisoria */
+    font-size: 0.9em; /* Texto un poco más pequeño para detalles */
+    color: #666;
+}
+
+.distribution-details-new span {
+    background-color: #e8f0fe; /* Fondo suave para cada item de distribución */
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    color: var(--primary-color-dark);
+}
+
+.carga-card .card-footer {
+    font-size: 0.8em; /* Tamaño más pequeño para la categoría */
+    color: #888;
+    margin-top: 10px; /* Espacio arriba del pie de página */
+    text-align: right; /* Alinea la categoría a la derecha */
+}
+
+.nombre-operarios {
+  font-size: 13px; /* Un poco más grande para ser más legible */
+  color: #777; /* Un gris más oscuro para mejor contraste */
+  margin-top: 8px; /* Más separación del contenido superior */
+  font-style: italic;
+  padding-top: 5px; /* Pequeño padding superior para separación visual */
+  border-top: 1px dashed #e0e0e0; /* Línea divisoria sutil */
+}
+
+/* --- Estilos de los botones fuera del formulario --- */
+button#exportarVinilicas {
+    padding: 12px 25px;
+    margin-top: 20px;
+    background-color: #007bff;
+    color: var(--text-color-light);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+button#exportarVinilicas:hover {
+    background-color: #0056b3;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+button#exportarVinilicas:active {
+    transform: translateY(1px);
+}
+
+/* Estilo para el spinner de carga */
+.loading-spinner {
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid var(--text-color-light);
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* --- Media Queries (para diseño responsivo) --- */
+@media (max-width: 768px) {
+  .horizontal-sections {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .form-section, .distribution-section {
+    min-width: unset;
+  }
+
+  .tabla-rondas {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+}

@@ -1,0 +1,66 @@
+ @page {
+    size: A4 portrait;
+    margin: 1cm;
+}
+body {
+    font-family: Calibri, sans-serif;
+    margin: 0;
+    padding: 0;
+    font-size: 9pt;
+}
+table {
+    border-collapse: collapse;
+    page-break-inside: avoid;
+    margin: 0;
+    padding: 0;
+}
+.container-table {
+    width: 100%;
+    border: none;
+}
+.container-table td {
+    vertical-align: top;
+    width: 50%;
+    padding: 0.2cm;
+}
+.header-table {
+    width: 100%;
+    border: 1pt solid black;
+    font-size: 8pt;
+    table-layout: fixed;
+}
+.header-table th, .header-table td {
+    border: 1pt solid black;
+    padding: 3pt 5pt;
+    text-align: center;
+    vertical-align: middle;
+    word-wrap: break-word;
+}
+.title-cell {
+    background-color: #ddebf7;
+    color: rgb(0, 0, 0);
+    font-weight: bold;
+    font-size: 9pt;
+    padding: 5pt;
+}
+.blue-header-cell {
+    background-color: #0070c0;
+    color: white;
+    font-weight: bold;
+    font-size: 7pt;
+    padding: 3pt 5pt;
+}
+.blue-bar {
+    height: 2pt;
+    background-color: #0070c0;      
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+.label-cell {
+    text-align: left;
+    font-weight: bold;
+    font-size: 7pt;
+    width: 20%;
+    padding-left: 5pt;
+}
