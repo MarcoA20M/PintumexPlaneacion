@@ -676,3 +676,79 @@
             });
         });
     }
+
+
+    // En tu archivo JavaScript o dentro del <script> en tu HTML
+document.getElementById('exportarWord').addEventListener('click', async function() {
+    const exportButton = this;
+    const originalText = exportButton.innerHTML;
+    
+    try {
+        exportButton.textContent = 'Generando...';
+        exportButton.disabled = true;
+        
+        // Preparar datos para los identificadores
+        const todasLasCargas = [];
+        for (const maquina in mapaMaquinaRondas) {
+            for (const ronda in mapaMaquinaRondas[maquina]) {
+                mapaMaquinaRondas[maquina][ronda]
+                    .filter(c => c.tipoOrden === 'madre')
+                    .forEach(carga => {
+                        todasLasCargas.push({
+                            folio: carga.folio,
+                            codigoPintura: carga.codigoPintura,
+                            litrosAsignados: carga.litrosAsignados,
+                            dispersor: maquina,
+                            rondaAsignada: ronda,
+                            medios: carga.medios || 0,
+                            litros_envase: carga.litros_envase || 0,
+                            galones: carga.galones || 0,
+                            cubetas: carga.cubetas || 0
+                        });
+                    });
+            }
+        }
+
+        // Llenar con null si es necesario (opcional)
+        while (todasLasCargas.length < 8) {
+            todasLasCargas.push(null);
+        }
+
+        // Enviar al endpoint
+        const response = await fetch('http://localhost:5000/generate-identificadores', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                cargas: todasLasCargas,
+                timestamp: new Date().toISOString()
+            })
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `Identificadores_${new Date().toISOString().split('T')[0]}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            exportButton.innerHTML = 'Exportado ✔️';
+        } else {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Error en el servidor: ${response.statusText}`);
+        }
+    } catch (error) {
+        console.error('Error al exportar identificadores:', error);
+        exportButton.innerHTML = 'Error ❌';
+        alert(`Error: ${error.message}\nVerifica que el servidor esté corriendo.`);
+    } finally {
+        exportButton.disabled = false;
+        setTimeout(() => {
+            exportButton.innerHTML = originalText;
+        }, 3000);
+    }
+});

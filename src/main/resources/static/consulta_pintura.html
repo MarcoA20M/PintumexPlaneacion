@@ -13,6 +13,7 @@
 
 <div class="container">
     <div class="main-content-grid">
+        <!-- Columna izquierda - Formulario -->
         <div class="form-section card">
             <h2>Crear Carga</h2>
             <form id="formCarga">
@@ -25,13 +26,6 @@
                 <div class="input-group">
                     <label for="codigo">Código de Pintura</label>
                     <input type="text" id="codigo" required />
-                </div>
-                
-                <div id="infoProducto" class="info-box" style="display:none;">
-                    <p><strong>Descripción:</strong> <span id="descProducto"></span></p>
-                    <p><strong>Base:</strong> <span id="baseProducto"></span></p>
-                    <p><strong>Categoría:</strong> <span id="categoriaProducto"></span></p>
-                    <p><strong>Prioridad:</strong> <span id="prioridadProducto"></span></p>
                 </div>
 
                 <fieldset>
@@ -65,49 +59,60 @@
             </form>
         </div>
 
-        <div class="distribution-section card">
-            <h3>Vista previa distribución</h3>
-            <div class="table-container">
-                <table id="tablaDistribucion">
-                    <thead>
-                        <tr>
-                            <th>Unidad</th>
-                            <th>Cantidad</th>
-                            <th>Litros</th>
-                            <th>Total (L)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Medios</td>
-                            <td id="cantMedios">0</td>
-                            <td>0.5</td>
-                            <td id="litrosMedios">0</td>
-                        </tr>
-                        <tr>
-                            <td>Litros</td>
-                            <td id="cantLitros">0</td>
-                            <td>1</td>
-                            <td id="litrosLitros">0</td>
-                        </tr>
-                        <tr>
-                            <td>Galones</td>
-                            <td id="cantGalones">0</td>
-                            <td>4</td>
-                            <td id="litrosGalones">0</td>
-                        </tr>
-                        <tr>
-                            <td>Cubetas</td>
-                            <td id="cantCubetas">0</td>
-                            <td>19</td>
-                            <td id="litrosCubetas">0</td>
-                        </tr>
-                        <tr class="total-row">
-                            <td colspan="3" style="text-align: right;">Total</td>
-                            <td id="litrosTotalTabla">0</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- Columna derecha - Información del producto y distribución -->
+        <div class="right-column">
+            <div id="infoProducto" class="info-box card" style="display:none;">
+                <h3>Información del Producto</h3>
+                <p><strong>Descripción:</strong> <span id="descProducto"></span></p>
+                <p><strong>Base:</strong> <span id="baseProducto"></span></p>
+                <p><strong>Categoría:</strong> <span id="categoriaProducto"></span></p>
+                <p><strong>Prioridad:</strong> <span id="prioridadProducto"></span></p>
+            </div>
+
+            <div class="distribution-section card">
+                <h3>Vista previa distribución</h3>
+                <div class="table-container">
+                    <table id="tablaDistribucion">
+                        <thead>
+                            <tr>
+                                <th>Unidad</th>
+                                <th>Cantidad</th>
+                                <th>Litros</th>
+                                <th>Total (L)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Medios</td>
+                                <td id="cantMedios">0</td>
+                                <td>0.5</td>
+                                <td id="litrosMedios">0</td>
+                            </tr>
+                            <tr>
+                                <td>Litros</td>
+                                <td id="cantLitros">0</td>
+                                <td>1</td>
+                                <td id="litrosLitros">0</td>
+                            </tr>
+                            <tr>
+                                <td>Galones</td>
+                                <td id="cantGalones">0</td>
+                                <td>4</td>
+                                <td id="litrosGalones">0</td>
+                            </tr>
+                            <tr>
+                                <td>Cubetas</td>
+                                <td id="cantCubetas">0</td>
+                                <td>19</td>
+                                <td id="litrosCubetas">0</td>
+                            </tr>
+                            <tr class="total-row">
+                                <td colspan="3" style="text-align: right;">Total</td>
+                                <td id="litrosTotalTabla">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -123,6 +128,7 @@
     </div>
 </div>
 
+<!-- Resto del código JavaScript permanece igual -->
 <script src="js/script.js"></script>
 
 <script>

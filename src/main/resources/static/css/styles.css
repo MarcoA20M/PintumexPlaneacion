@@ -399,3 +399,26 @@ table#tablaDistribucion tbody tr:nth-child(even) {
         grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     }
 }
+
+.right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Asegúrate de que el main-content-grid tenga espacio para ambas columnas */
+.main-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+@media (max-width: 900px) {
+    .main-content-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .right-column {
+        order: -1; /* Opcional: en móvil puedes poner la columna derecha arriba */
+    }
+}
