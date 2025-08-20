@@ -10,8 +10,8 @@
     --text-color-light: #fff;
     --border-color: #e0e6ec;
     --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    --card-hover-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada */
+    --card-hover-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); /* Sombra aún más fuerte al pasar el mouse */
 }
 
 /* --- Estilos Base --- */
@@ -289,13 +289,14 @@ table#tablaDistribucion tbody tr:nth-child(even) {
     border: 2px dashed var(--primary-color);
 }
 
-/* --- Tarjetas de Carga (Drag & Drop) --- */
+/* --- Tarjetas de Carga (Drag & Drop) - ESTILOS MEJORADOS --- */
+/* --- Tarjetas de Carga (Drag & Drop) - ESTILOS MEJORADOS --- */
 .carga-card {
-    background: linear-gradient(135deg, #f8fafd 0%, #edf2f7 100%);
-    border: 1px solid #d1e4f9;
-    border-left: 6px solid var(--primary-color);
+    background: linear-gradient(145deg, #ffffff 0%, #f0f5fa 100%); /* Degradado suave */
+    border: 1px solid var(--border-color);
+    border-left: 8px solid var(--primary-color); /* Borde izquierdo más grueso */
     padding: 15px;
-    border-radius: 10px;
+    border-radius: 12px; /* Esquinas más redondeadas */
     margin-bottom: 12px;
     cursor: grab;
     position: relative;
@@ -306,12 +307,12 @@ table#tablaDistribucion tbody tr:nth-child(even) {
     transition: all 0.3s ease-out;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 8px; /* Aumento de espacio entre elementos */
     text-align: left;
 }
 
 .carga-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-5px); /* Elevación sutil */
     box-shadow: var(--card-hover-shadow);
     border-left-color: var(--primary-color-dark);
 }
@@ -319,62 +320,75 @@ table#tablaDistribucion tbody tr:nth-child(even) {
 .carga-card .header-content {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 8px;
+    align-items: flex-start; /* Alineación vertical al inicio */
+    margin-bottom: 5px; /* Menos espacio si los elementos están bien alineados */
     position: relative;
 }
 
 .carga-card .main-code {
-    font-size: 1.2em;
-    font-weight: 700;
+    font-size: 1.3em; /* Código más grande */
+    font-weight: 800; /* Más negrita */
     color: var(--primary-color-dark);
     flex-grow: 1;
+    line-height: 1.2;
+    padding-right: 60px; /* Asegura espacio para el círculo */
 }
 
 .litros-total-circulo {
     position: absolute;
-    top: -15px;
+    top: -15px; /* Ajuste la posición para un mejor balance */
     right: -15px;
     background-color: var(--secondary-color);
-    color: var(--text-color-dark);
+    color: var(--text-color-light); /* Texto blanco para mayor contraste */
     border-radius: 50%;
-    width: 45px;
-    height: 45px;
+    width: 60px; /* Círculo un poco más grande para el texto */
+    height: 60px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 14px;
+    font-size: 14px; /* Tamaño de fuente ajustado para caber */
     font-weight: bold;
-    border: 4px solid var(--text-color-light);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+    padding: 5px; /* Añade espacio interno para que el texto no se salga */
+    border: 4px solid var(--text-color-light); /* Borde blanco más grueso */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25); /* Sombra mejorada para el círculo */
     z-index: 10;
     line-height: 1.2;
+    text-align: center;
+    transition: all 0.3s ease-out;
+}
+
+.carga-card:hover .litros-total-circulo {
+    transform: scale(1.1); /* Efecto de zoom al pasar el mouse */
+    background-color: var(--primary-color); /* Cambia de color */
 }
 
 .distribution-details-new {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px; /* Menos espacio entre los detalles */
     margin-top: 5px;
-    padding-top: 5px;
-    border-top: 1px dashed #e0e0e0;
-    font-size: 0.9em;
-    color: #666;
+    padding-top: 8px; /* Más padding superior */
+    border-top: 1px dashed #cfd8dc; /* Color más suave para la línea divisoria */
+    font-size: 0.85em; /* Detalles un poco más pequeños */
+    color: #555;
 }
 
 .distribution-details-new span {
-    background-color: #e8f0fe;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-weight: 500;
+    background-color: var(--primary-color-light);
+    padding: 4px 10px; /* Más padding en los spans */
+    border-radius: 6px; /* Bordes más redondeados */
+    font-weight: 600; /* Más negrita */
     color: var(--primary-color-dark);
+    white-space: nowrap; /* Evita que el texto se rompa */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); /* Sombra sutil para cada detalle */
 }
 
 .carga-card .card-footer {
-    font-size: 0.8em;
-    color: #888;
-    margin-top: 10px;
+    font-size: 0.85em; /* Tamaño de fuente ligeramente más grande */
+    color: #777;
+    margin-top: 12px; /* Más espacio sobre el footer */
     text-align: right;
+    font-style: italic;
 }
 
 .nombre-operarios {
@@ -421,4 +435,126 @@ table#tablaDistribucion tbody tr:nth-child(even) {
     .right-column {
         order: -1; /* Opcional: en móvil puedes poner la columna derecha arriba */
     }
+}
+
+/* Estilos para el Modal */
+.modal {
+    display: none; /* Esto lo oculta por defecto */
+    position: fixed; /* Posiciona el modal de forma absoluta sobre la pantalla */
+    z-index: 1000; /* Asegura que el modal esté por encima de otros elementos */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Permite desplazamiento si el contenido es muy grande */
+    background-color: rgba(0,0,0,0.6); /* Fondo semi-transparente */
+    justify-content: center;
+    align-items: center;
+}
+
+/* Estilos para el contenido del modal */
+.modal-content {
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 800px;
+    position: relative;
+    max-height: 90vh; /* Limita la altura para que no sea más grande que la ventana del navegador */
+    overflow-y: auto; /* Permite desplazamiento interno si el contenido es largo */
+}
+
+
+/* ====== Estilos del Modal Mejorados ====== */
+.modal-content {
+    background-color: #fefefe;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 900px;
+    position: relative;
+    max-height: 90vh; 
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 16px;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.close-button {
+    color: #aaa;
+    font-size: 2.5rem;
+    font-weight: 300;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s ease-in-out;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: #1a1a1a;
+}
+
+.modal-body {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 8px; /* Espacio para el scrollbar */
+}
+
+.modal-footer {
+    padding-top: 16px;
+    border-top: 1px solid #e0e0e0;
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.table-container-modal {
+    max-height: 50vh; 
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+}
+
+/* Tabla del modal */
+#cargasTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#cargasTable thead {
+    background-color: #f5f5f5;
+    position: sticky;
+    top: 0;
+}
+
+#cargasTable th,
+#cargasTable td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+#cargasTable tr:hover {
+    background-color: #f1f1f1;
+}
+
+#cargasTable tbody tr:last-child td {
+    border-bottom: none;
 }

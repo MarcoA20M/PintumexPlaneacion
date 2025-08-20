@@ -13,7 +13,6 @@
 
 <div class="container">
     <div class="main-content-grid">
-        <!-- Columna izquierda - Formulario -->
         <div class="form-section card">
             <h2>Crear Carga</h2>
             <form id="formCarga">
@@ -59,7 +58,6 @@
             </form>
         </div>
 
-        <!-- Columna derecha - Información del producto y distribución -->
         <div class="right-column">
             <div id="infoProducto" class="info-box card" style="display:none;">
                 <h3>Información del Producto</h3>
@@ -120,6 +118,8 @@
     <div id="tablaRondas" class="tabla-rondas"></div>
     
     <div class="footer-buttons">
+        <button id="guardarBD" class="button-primary">Guardar en BD</button>
+        <button id="verCargas" class="button-secondary">Ver Lista de Cargas</button>
         <button id="exportarWord" class="button-tertiary">Exportar a Word</button>
         <button id="exportarVinilicas" class="button-tertiary">
             Exportar reporte de vinílicas
@@ -128,7 +128,34 @@
     </div>
 </div>
 
-<!-- Resto del código JavaScript permanece igual -->
+<div id="modalCargas" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Lista de Cargas</h2>
+            <span class="close-button" id="closeModal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="table-container-modal">
+                <table id="cargasTable">
+                    <thead>
+                        <tr>
+                            <th>Folio</th>
+                            <th>Código</th>
+                            <th>Base</th>
+                            <th>Litros</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="btnAsignarRondas" class="button-primary">Asignar Rondas</button>
+        </div>
+    </div>
+</div>
 <script src="js/script.js"></script>
 
 <script>
