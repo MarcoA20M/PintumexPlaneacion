@@ -1,5 +1,6 @@
 // ====== Configuración inicial ======
 const categoriasPrioridad = {
+    // Categorías de Vinílicas
     "Transparentes": 1,
     "Basicos": 2,
     "Basicos 1": 3,
@@ -15,7 +16,18 @@ const categoriasPrioridad = {
     "Pastel 1": 13,
     "Pastel 2": 14,
     "Blancos": 15,
-    "Directos": 16
+    "Directos": 16,
+
+    // Categorías de Esmaltes
+    "Esmalux SR": 1,
+    "DryLux SR": 2,
+    "Automotive": 3,
+    "Base Transparente": 4,
+    "Base Blanca": 5,
+    "Base Pastel": 6,
+    "Base Media": 7,
+    "Base Intensa": 8,
+    "Igualacion": 9
 };
 
 const capacidadesMaquinas = {
@@ -57,6 +69,13 @@ const galonesInput = document.getElementById('galones');
 const cubetasInput = document.getElementById('cubetas');
 const tabla = document.getElementById("tablaRondas");
 
+// Controles de Modo
+const modeVinilica = document.getElementById('modeVinilica');
+const modeEsmalte = document.getElementById('modeEsmalte');
+const vinilicaSection = document.getElementById('vinilicaMode');
+const esmalteSection = document.getElementById('esmalteMode');
+const formCarga = document.getElementById('formCarga');
+
 // Modal Elements
 const verCargasButton = document.getElementById('verCargas');
 const modalCargas = document.getElementById('modalCargas');
@@ -74,34 +93,31 @@ function getWeekNumber(d) {
     return [d.getUTCFullYear(), weekNo];
 }
 
-let consecutivoDiario = 1;
-let fechaActualFolio = "";
-
 function generarFolioBase() {
     const hoy = new Date();
     const anio = String(hoy.getFullYear()).slice(-2);
     const mes = String(hoy.getMonth() + 1).padStart(2, "0");
     const dia = String(hoy.getDate()).padStart(2, "0");
-    return `V${anio}${mes}${dia}`;
+    const modo = modeEsmalte.classList.contains('active') ? 'E' : 'V';
+    return `${modo}${anio}${mes}${dia}`;
 }
 
-function generarFolioDiario() {
-    const fechaString = generarFolioBase();
-    if (fechaString !== fechaActualFolio) {
-        consecutivoDiario = 1;
-        fechaActualFolio = fechaString;
-    }
-    const numero = String(consecutivoDiario).padStart(3, "0");
-    consecutivoDiario++;
-    return `${fechaString}${numero}`;
+function generarFolioTemporal() {
+    const hoy = new Date();
+    const anio = String(hoy.getFullYear()).slice(-2);
+    const mes = String(hoy.getMonth() + 1).padStart(2, "0");
+    const dia = String(hoy.getDate()).padStart(2, "0");
+    const marcaTiempo = Date.now();
+    const modo = modeEsmalte.classList.contains('active') ? 'E' : 'V';
+    return `${modo}${anio}${mes}${dia}-${marcaTiempo}`;
 }
 
 function inicializarFolio() {
-    folioInput.value = generarFolioDiario();
-    consecutivoDiario--;
+    const numCargas = cargasGuardadas.filter(c => c.tipoPintura === (modeEsmalte.classList.contains('active') ? 'esmalte' : 'vinilica')).length + 1;
+    const numero = String(numCargas).padStart(3, "0");
+    const fechaString = generarFolioBase();
+    folioInput.value = `${fechaString}${numero}`;
 }
-
-// ====== Helper Functions ======
 
 function actualizarDistribucion() {
     const medios = Number(mediosInput.value) || 0;
@@ -183,22 +199,47 @@ function asignarCargaSegunPrioridad(nuevaCarga) {
 }
 
 async function buscarProductoPorCodigo(codigo) {
+    const modoActivo = modeEsmalte.classList.contains('active') ? 'esmalte' : 'vinilica';
+    let endpoint = '';
+
+    if (modoActivo === 'esmalte') {
+        endpoint = `/api/esmaltes/codigo/${encodeURIComponent(codigo)}`;
+    } else {
+        endpoint = `/api/productos/codigo/${encodeURIComponent(codigo)}`;
+    }
+
     try {
-        const response = await fetch(`/api/productos/codigo/${encodeURIComponent(codigo)}`);
-        if (!response.ok) throw new Error('Product not found');
+        const response = await fetch(endpoint);
+        if (!response.ok) {
+            if (response.status === 404) return null;
+            throw new Error(`Error en la búsqueda: ${response.statusText}`);
+        }
+        
         const producto = await response.json();
         
-        return {
-            descripcion: producto.descripcion,
-            base: producto.base,
-            numeroBase: producto.numeroBase,
-            categoria: { 
-                nombre: producto.categoria.nombre, 
-                prioridad: categoriasPrioridad[producto.categoria.nombre] || 99 
-            }
-        };
+        if (modoActivo === 'esmalte') {
+            return {
+                descripcion: producto.descripcion,
+                tipo: producto.tipo,
+                es_igualacion: producto.es_igualacion,
+                categoria: { 
+                    nombre: producto.tipo,
+                    prioridad: categoriasPrioridad[producto.tipo] || 99
+                }
+            };
+        } else { // modo vinilica
+            return {
+                descripcion: producto.descripcion,
+                base: producto.base,
+                numeroBase: producto.numeroBase,
+                categoria: { 
+                    nombre: producto.categoria.nombre,
+                    prioridad: categoriasPrioridad[producto.categoria.nombre] || 99 
+                }
+            };
+        }
     } catch (error) {
-        console.error("Error searching product:", error);
+        console.error("Error al buscar producto:", error);
         return null;
     }
 }
@@ -214,7 +255,15 @@ async function cargarProductoPorCodigo() {
 
     if (producto) {
         descSpan.textContent = producto.descripcion;
-        baseSpan.textContent = producto.base;
+        
+        if (producto.base) {
+            baseSpan.textContent = producto.base;
+        } else if (producto.tipo) {
+            baseSpan.textContent = producto.tipo;
+        } else {
+            baseSpan.textContent = 'N/A';
+        }
+        
         categoriaSpan.textContent = producto.categoria.nombre;
         prioridadSpan.textContent = producto.categoria.prioridad;
         infoDiv.style.display = 'block';
@@ -227,7 +276,7 @@ async function cargarProductoPorCodigo() {
         prioridadSpan.textContent = '';
         infoDiv.style.display = 'none';
         mensaje.style.color = 'red';
-        mensaje.textContent = 'Product not found';
+        mensaje.textContent = 'Código no encontrado.';
         return null;
     }
 }
@@ -248,7 +297,7 @@ function calcularLitrosEnMaquinaRonda(maquina, ronda) {
     return cargas.reduce((total, carga) => total + (carga.litrosAsignados || 0), 0);
 }
 
-// ====== Functions to Render Round Table ======
+// ====== Funciones para Renderizar Tabla y Guardar/Cargar Estado ======
 
 async function renderizarTabla() {
     tabla.innerHTML = '';
@@ -325,15 +374,15 @@ async function renderizarTabla() {
                 distributionDetailsHtml = detailsArray.join(', ');
 
                 card.innerHTML = `
-    <div class="header-content">
-        <div class="main-code">Código: ${c.codigoPintura}</div>
-        <div class="litros-total-circulo">${Math.round(c.litrosAsignados || 0)} L</div>
-    </div>
+                    <div class="header-content">
+                        <div class="main-code">Código: ${c.codigoPintura}</div>
+                        <div class="litros-total-circulo">${Math.round(c.litrosAsignados || 0)} L</div>
+                    </div>
                     <div class="distribution-details-new">
                         ${distributionDetailsHtml}
                     </div>
                     <div class="card-footer">
-                        <small>${c.categoria ? c.categoria.nombre : ''}</small>
+                        <small>Base: ${c.numero_base}</small>
                     </div>
                 `;
                 rondaDiv.appendChild(card);
@@ -348,53 +397,65 @@ async function renderizarTabla() {
     }
 }
 
-// ====== Funciones para Guardar y Cargar Estado ======
-
 function guardarEstado() {
     localStorage.setItem('mapaMaquinaRondas', JSON.stringify(mapaMaquinaRondas));
     localStorage.setItem('cargasGuardadas', JSON.stringify(cargasGuardadas));
-    localStorage.setItem('consecutivoDiario', consecutivoDiario);
-    localStorage.setItem('fechaActualFolio', fechaActualFolio);
 }
 
 function cargarEstado() {
     const estadoMapa = localStorage.getItem('mapaMaquinaRondas');
     const estadoCargas = localStorage.getItem('cargasGuardadas');
-    const estadoConsecutivo = localStorage.getItem('consecutivoDiario');
-    const estadoFecha = localStorage.getItem('fechaActualFolio');
 
     if (estadoMapa) {
         Object.assign(mapaMaquinaRondas, JSON.parse(estadoMapa));
     }
     if (estadoCargas) {
-        // Asignar el array de cargas guardadas
         cargasGuardadas = JSON.parse(estadoCargas);
-    }
-    if (estadoConsecutivo) {
-        consecutivoDiario = parseInt(estadoConsecutivo, 10);
-    }
-    if (estadoFecha) {
-        fechaActualFolio = estadoFecha;
     }
 }
 
 
-// ====== Form and Input Event Listeners ======
+// ====== Funciones de Modo y Event Listeners ======
 
-document.getElementById('formCarga').addEventListener('submit', async e => {
+function cambiarModo(modo) {
+    if (modo === 'esmalte') {
+        modeEsmalte.classList.add('active');
+        modeVinilica.classList.remove('active');
+        vinilicaSection.style.display = 'none';
+        esmalteSection.style.display = 'block';
+    } else {
+        modeVinilica.classList.add('active');
+        modeEsmalte.classList.remove('active');
+        vinilicaSection.style.display = 'block';
+        esmalteSection.style.display = 'none';
+    }
+    // Reiniciar el formulario y la información al cambiar de modo
+    formCarga.reset();
+    infoDiv.style.display = 'none';
+    mensaje.textContent = '';
+    actualizarDistribucion();
+    inicializarFolio();
+}
+
+// Event listeners para los botones de modo
+modeEsmalte.addEventListener('click', () => cambiarModo('esmalte'));
+modeVinilica.addEventListener('click', () => cambiarModo('vinilica'));
+
+// Evento de submit del formulario
+formCarga.addEventListener('submit', async e => {
     e.preventDefault();
 
     const codigo = codigoInput.value.trim();
     if (!codigo) {
         mensaje.style.color = 'red';
-        mensaje.textContent = 'Code required';
+        mensaje.textContent = 'Código requerido.';
         return;
     }
 
     const producto = await cargarProductoPorCodigo();
     if (!producto) {
         mensaje.style.color = 'red';
-        mensaje.textContent = 'Product not found';
+        mensaje.textContent = 'Producto no encontrado.';
         return;
     }
 
@@ -406,14 +467,14 @@ document.getElementById('formCarga').addEventListener('submit', async e => {
 
     if (totalLitros <= 0) {
         mensaje.style.color = 'red';
-        mensaje.textContent = 'Enter valid quantities';
+        mensaje.textContent = 'Ingresa cantidades válidas.';
         return;
     }
 
+    const tipoPintura = modeEsmalte.classList.contains('active') ? 'esmalte' : 'vinilica';
     const cargaParaLista = {
-        folio: generarFolioDiario(),
+        folio: generarFolioTemporal(),
         codigoPintura: codigo,
-        numero_base: producto.numeroBase,
         totalLitros: totalLitros,
         fecha: new Date().toLocaleDateString(),
         tipoOrden: 'madre',
@@ -421,21 +482,34 @@ document.getElementById('formCarga').addEventListener('submit', async e => {
         cubetas: cubetas,
         galones: galones,
         litros_envase: litros,
-        medios: medios
+        medios: medios,
+        tipoPintura: tipoPintura
     };
+    
+    // Añadir propiedades específicas del producto
+    if (tipoPintura === 'esmalte') {
+        cargaParaLista.tipo = producto.tipo;
+        cargaParaLista.es_igualacion = producto.es_igualacion;
+    } else {
+        cargaParaLista.numero_base = producto.numeroBase;
+    }
 
     cargasGuardadas.push(cargaParaLista);
     guardarEstado();
 
-    folioInput.value = generarFolioDiario();
+    inicializarFolio();
     mensaje.style.color = 'green';
-    mensaje.textContent = `Carga agregada. Folio: ${cargaParaLista.folio}`;
+    mensaje.textContent = `Carga agregada. Folio temporal: ${cargaParaLista.folio}`;
 
-    document.getElementById('formCarga').reset();
+    formCarga.reset();
     actualizarDistribucion();
     infoDiv.style.display = 'none';
+    
+    mostrarCargasEnModal();
 });
 
+
+// Event Listeners
 codigoInput.addEventListener('blur', cargarProductoPorCodigo);
 
 [mediosInput, litrosInput, galonesInput, cubetasInput].forEach(input => {
@@ -491,15 +565,168 @@ function mostrarRecomendacion(data) {
     contenedor.innerHTML = html;
 }
 
+// ====== Funciones para el Modal y Asignación de rondas ======
+
+function mostrarCargasEnModal() {
+    const cargasParaModal = JSON.parse(localStorage.getItem('cargasGuardadas')) || [];
+    cargasTableBody.innerHTML = '';
+    
+    if (cargasParaModal.length > 0) {
+        const cargasFiltradas = cargasParaModal.filter(c => c.tipoPintura === 'vinilica');
+        const cargasOrdenadas = cargasFiltradas.sort((a, b) => a.numero_base - b.numero_base);
+        
+        const folioBase = generarFolioBase();
+        cargasOrdenadas.forEach((carga, index) => {
+            const numero = String(index + 1).padStart(3, "0");
+            carga.folio = `V${folioBase.slice(1)}${numero}`;
+        });
+        
+        localStorage.setItem('cargasGuardadas', JSON.stringify(cargasParaModal));
+        
+        cargasOrdenadas.forEach(carga => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${carga.folio}</td>
+                <td>${carga.codigoPintura}</td>
+                <td>${carga.numero_base}</td>
+                <td>${carga.totalLitros.toFixed(2)} L</td>
+                <td>${carga.fecha}</td>
+            `;
+            cargasTableBody.appendChild(row);
+        });
+        asignarRondasBtn.style.display = 'inline-block';
+    } else {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="5" style="text-align: center;">No hay cargas guardadas.</td>`;
+        cargasTableBody.appendChild(row);
+        asignarRondasBtn.style.display = 'none';
+    }
+}
+
+function asignarRondas() {
+    let cargasPendientes = JSON.parse(localStorage.getItem('cargasGuardadas')) || [];
+    let cargasVinilicasPendientes = cargasPendientes.filter(c => c.tipoPintura === 'vinilica');
+
+    if (cargasVinilicasPendientes.length === 0) {
+        alert('No hay cargas de pintura vinílica pendientes para asignar.');
+        return;
+    }
+
+    reorganizarCalendario(cargasVinilicasPendientes);
+    
+    const cargasDeEsmalte = cargasPendientes.filter(c => c.tipoPintura === 'esmalte');
+    localStorage.setItem('cargasGuardadas', JSON.stringify([...cargasDeEsmalte, ...cargasGuardadas]));
+
+
+    alert('Cargas asignadas y calendario reorganizado correctamente.');
+    modalCargas.style.display = 'none';
+    
+    renderizarTabla();
+}
+
+
+function reorganizarCalendario(nuevasCargas) {
+    // 1. Recopilar todas las cargas **vinílicas** existentes y las nuevas en un solo array
+    let todasLasCargasVinilicas = [];
+    for (const maquina in mapaMaquinaRondas) {
+        for (const ronda in mapaMaquinaRondas[maquina]) {
+            todasLasCargasVinilicas = todasLasCargasVinilicas.concat(mapaMaquinaRondas[maquina][ronda]);
+        }
+    }
+    todasLasCargasVinilicas = todasLasCargasVinilicas.concat(nuevasCargas);
+
+    // 2. Ordenar todas las cargas por NUMERO DE BASE de forma numérica.
+    todasLasCargasVinilicas.sort((a, b) => a.numero_base - b.numero_base);
+
+    // 3. Reasignar los folios para que coincidan con el orden de asignación
+    const folioBase = generarFolioBase();
+    todasLasCargasVinilicas.forEach((carga, index) => {
+        const numero = String(index + 1).padStart(3, "0");
+        carga.folio = `${folioBase}${numero}`;
+    });
+
+    // 4. Limpiar el calendario actual para la nueva asignación
+    maquinas.forEach(m => {
+        for (let r = 1; r <= rondasTotales; r++) {
+            mapaMaquinaRondas[m][r] = [];
+        }
+    });
+
+    // 5. Reasignar todas las cargas en el nuevo orden, buscando el mejor lugar
+    const cargasNoAsignadas = [];
+    todasLasCargasVinilicas.forEach(carga => {
+        let mejorMaquina = null;
+        let mejorRonda = null;
+        let mejorPuntuacion = Infinity;
+
+        // Primero, busca un lugar que respete la regla de "mismo código en la misma máquina"
+        for (let ronda = 1; ronda <= rondasTotales; ronda++) {
+            for (const maquina of maquinas) {
+                const cargasEnRonda = mapaMaquinaRondas[maquina][ronda];
+                const litrosEnRonda = cargasEnRonda.reduce((acc, c) => acc + (c.litrosAsignados || 0), 0);
+                const capacidadMaquina = capacidadesMaquinas[maquina];
+                const isSameCode = cargasEnRonda.length > 0 && cargasEnRonda[0].codigoPintura === carga.codigoPintura;
+
+                if (isSameCode && (litrosEnRonda + carga.totalLitros) <= capacidadMaquina) {
+                    const puntuacion = capacidadMaquina - (litrosEnRonda + carga.totalLitros);
+                    if (puntuacion < mejorPuntuacion) {
+                        mejorMaquina = maquina;
+                        mejorRonda = ronda;
+                        mejorPuntuacion = puntuacion;
+                    }
+                }
+            }
+        }
+        
+        // Si no se encontró un lugar con el mismo código, busca el mejor lugar en general (sin mezclar códigos)
+        if (mejorMaquina === null) {
+            for (let ronda = 1; ronda <= rondasTotales; ronda++) {
+                for (const maquina of maquinas) {
+                    const cargasEnRonda = mapaMaquinaRondas[maquina][ronda];
+                    const litrosEnRonda = cargasEnRonda.reduce((acc, c) => acc + (c.litrosAsignados || 0), 0);
+                    const capacidadMaquina = capacidadesMaquinas[maquina];
+                    
+                    // Asegúrate de que no haya cargas del mismo código
+                    const isNotMixed = cargasEnRonda.length === 0;
+
+                    if (isNotMixed && carga.totalLitros <= capacidadMaquina) {
+                        const puntuacion = capacidadMaquina - carga.totalLitros;
+                        if (puntuacion < mejorPuntuacion) {
+                            mejorMaquina = maquina;
+                            mejorRonda = ronda;
+                            mejorPuntuacion = puntuacion;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Si se encontró un lugar, asigna la carga.
+        if (mejorMaquina && mejorRonda) {
+            const cargaCompleta = {
+                ...carga,
+                litrosAsignados: carga.totalLitros,
+                tipoOrden: 'madre'
+            };
+            mapaMaquinaRondas[mejorMaquina][mejorRonda].push(cargaCompleta);
+        } else {
+            cargasNoAsignadas.push(carga);
+            console.warn(`No se pudo reasignar la carga ${carga.folio}. No hay espacio disponible.`);
+        }
+    });
+
+    // 6. Actualizar las listas finales
+    const cargasDeEsmalte = cargasGuardadas.filter(c => c.tipoPintura === 'esmalte');
+    cargasGuardadas = [...cargasDeEsmalte, ...cargasNoAsignadas];
+    localStorage.setItem('cargasGuardadas', JSON.stringify(cargasGuardadas));
+
+    // 7. Guardar el estado completo del calendario
+    guardarEstado();
+}
+
 // ====== Initialization ======
 window.onload = () => {
     cargarEstado();
-    const cargasAsignadasDesdeLista = localStorage.getItem('mapaMaquinaRondasAsignadas');
-    if (cargasAsignadasDesdeLista) {
-        Object.assign(mapaMaquinaRondas, JSON.parse(cargasAsignadasDesdeLista));
-        localStorage.removeItem('mapaMaquinaRondasAsignadas');
-        localStorage.removeItem('cargasAgregadas');
-    }
     inicializarFolio();
     actualizarDistribucion();
     renderizarTabla();
@@ -644,142 +871,6 @@ document.getElementById('exportarWord').addEventListener('click', async function
         exportButton.disabled = false;
     }
 });
-
-
-// ====== Modal Logic ======
-
-function mostrarCargasEnModal() {
-    const cargasParaModal = JSON.parse(localStorage.getItem('cargasGuardadas')) || [];
-    cargasTableBody.innerHTML = ''; // Limpiamos la tabla
-    
-    if (cargasParaModal.length > 0) {
-        const cargasOrdenadas = cargasParaModal.sort((a, b) => a.numero_base - b.numero_base);
-        cargasOrdenadas.forEach(carga => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${carga.folio}</td>
-                <td>${carga.codigoPintura}</td>
-                <td>${carga.numero_base}</td>
-                <td>${carga.totalLitros.toFixed(2)} L</td>
-                <td>${carga.fecha}</td>
-            `;
-            cargasTableBody.appendChild(row);
-        });
-        asignarRondasBtn.style.display = 'inline-block';
-    } else {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td colspan="5" style="text-align: center;">No hay cargas guardadas.</td>`;
-        cargasTableBody.appendChild(row);
-        asignarRondasBtn.style.display = 'none';
-    }
-}
-
-function asignarRondas() {
-    let cargasPendientes = JSON.parse(localStorage.getItem('cargasGuardadas')) || [];
-    
-    if (cargasPendientes.length === 0) {
-        alert('No hay cargas pendientes para asignar.');
-        return;
-    }
-
-    reorganizarCalendario(cargasPendientes);
-
-    alert('Cargas asignadas y calendario reorganizado correctamente.');
-    modalCargas.style.display = 'none';
-    
-    renderizarTabla();
-}
-
-
-function reorganizarCalendario(nuevasCargas) {
-    // 1. Recopilar todas las cargas existentes y las nuevas en un solo array
-    let todasLasCargas = [];
-    for (const maquina in mapaMaquinaRondas) {
-        for (const ronda in mapaMaquinaRondas[maquina]) {
-            todasLasCargas = todasLasCargas.concat(mapaMaquinaRondas[maquina][ronda]);
-        }
-    }
-    todasLasCargas = todasLasCargas.concat(nuevasCargas);
-
-    // 2. Ordenar todas las cargas por prioridad (asumiendo que menor número es mayor prioridad)
-    todasLasCargas.sort((a, b) => {
-        const prioridadA = a.categoria ? a.categoria.prioridad : 99;
-        const prioridadB = b.categoria ? b.categoria.prioridad : 99;
-        return prioridadA - prioridadB;
-    });
-
-    // 3. Limpiar el calendario actual para la nueva asignación
-    maquinas.forEach(m => {
-        for (let r = 1; r <= rondasTotales; r++) {
-            mapaMaquinaRondas[m][r] = [];
-        }
-    });
-
-    // 4. Reasignar todas las cargas en el nuevo orden, dando prioridad a las máquinas con el mismo código
-    const cargasNoAsignadas = [];
-    todasLasCargas.forEach(carga => {
-        let asignada = false;
-
-        // Bucle principal para buscar un lugar en las rondas
-        for (let ronda = 1; ronda <= rondasTotales; ronda++) {
-            
-            // 4a. PRIMERO: Busca una máquina con cargas del mismo código
-            for (const maquina of maquinas) {
-                const cargasEnRonda = mapaMaquinaRondas[maquina][ronda];
-                if (cargasEnRonda.length > 0 && cargasEnRonda[0].codigoPintura === carga.codigoPintura) {
-                    const litrosEnRonda = cargasEnRonda.reduce((acc, c) => acc + (c.litrosAsignados || 0), 0);
-                    const capacidadMaquina = capacidadesMaquinas[maquina];
-                    
-                    if ((litrosEnRonda + carga.totalLitros) <= capacidadMaquina) {
-                        const cargaCompleta = {
-                            ...carga,
-                            litrosAsignados: carga.totalLitros,
-                            tipoOrden: 'madre'
-                        };
-                        mapaMaquinaRondas[maquina][ronda].push(cargaCompleta);
-                        asignada = true;
-                        break; // Sale del bucle de máquinas
-                    }
-                }
-            }
-            if (asignada) break; // Sale del bucle de rondas si ya se asignó
-
-            // 4b. SEGUNDO: Si no se asignó, busca una máquina vacía
-            if (!asignada) {
-                for (const maquina of maquinas) {
-                    const cargasEnRonda = mapaMaquinaRondas[maquina][ronda];
-                    if (cargasEnRonda.length === 0) {
-                        const capacidadMaquina = capacidadesMaquinas[maquina];
-
-                        if (carga.totalLitros <= capacidadMaquina) {
-                            const cargaCompleta = {
-                                ...carga,
-                                litrosAsignados: carga.totalLitros,
-                                tipoOrden: 'madre'
-                            };
-                            mapaMaquinaRondas[maquina][ronda].push(cargaCompleta);
-                            asignada = true;
-                            break; // Sale del bucle de máquinas
-                        }
-                    }
-                }
-            }
-            if (asignada) break; // Sale del bucle de rondas si ya se asignó
-        }
-
-        if (!asignada) {
-            cargasNoAsignadas.push(carga);
-            console.warn(`No se pudo reasignar la carga ${carga.folio}. No hay espacio disponible.`);
-        }
-    });
-
-    // 5. Actualizar las listas finales
-    localStorage.setItem('cargasGuardadas', JSON.stringify(cargasNoAsignadas));
-    cargasGuardadas = cargasNoAsignadas;
-
-    // 6. Guardar el estado completo del calendario
-    guardarEstado();
-}
 
 // Event Listeners for Modal
 verCargasButton.addEventListener('click', () => {

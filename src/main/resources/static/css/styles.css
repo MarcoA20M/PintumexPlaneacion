@@ -153,49 +153,60 @@ legend {
 button {
     padding: 12px 20px;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px; /* Slightly more rounded */
     cursor: pointer;
     font-size: 16px;
     font-weight: 600;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.button-primary {
-    flex: 1;
-    background-color: var(--primary-color);
-    color: var(--text-color-light);
-}
-
-.button-primary:hover {
-    background-color: var(--primary-color-dark);
-}
-
-.button-secondary {
-    flex: 1;
-    background-color: var(--accent-color);
-    color: var(--text-color-light);
-}
-
-.button-secondary:hover {
-    background-color: #449d48;
-}
-
-.button-tertiary {
-    background-color: #007bff;
-    color: var(--text-color-light);
-    display: flex;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Stronger initial shadow */
+    position: relative;
+    overflow: hidden; /* For hover effects */
+    display: flex; /* To center text and spinner */
     align-items: center;
     justify-content: center;
 }
 
+.button-primary {
+    flex: 1;
+    background-image: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+    color: var(--text-color-light);
+    border: 1px solid var(--primary-color-dark);
+}
+
+.button-primary:hover {
+    background-image: linear-gradient(135deg, var(--primary-color-dark), var(--primary-color));
+    transform: translateY(-2px); /* Lift effect */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25); /* Deeper shadow on hover */
+}
+
+.button-secondary {
+    flex: 1;
+    background-image: linear-gradient(135deg, var(--accent-color), #3b8b3f); /* Darker green for gradient end */
+    color: var(--text-color-light);
+    border: 1px solid #3b8b3f;
+}
+
+.button-secondary:hover {
+    background-image: linear-gradient(135deg, #3b8b3f, var(--accent-color));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+}
+
+.button-tertiary {
+    background-image: linear-gradient(135deg, #007bff, #0056b3);
+    color: var(--text-color-light);
+    border: 1px solid #0056b3;
+}
+
 .button-tertiary:hover {
-    background-color: #0056b3;
+    background-image: linear-gradient(135deg, #0056b3, #007bff);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
 }
 
 button:active {
-    transform: translateY(2px);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .loading-spinner {
@@ -250,7 +261,7 @@ table#tablaDistribucion tbody tr:nth-child(even) {
 /* --- Grid de Rondas (Drag & Drop) --- */
 .tabla-rondas {
     display: grid;
-    grid-template-columns: 120px repeat(4, 1fr);
+    grid-template-columns: 120px repeat(4, 0.4fr);
     gap: 1px;
     background-color: var(--border-color);
     border: 1px solid var(--border-color);
@@ -290,12 +301,11 @@ table#tablaDistribucion tbody tr:nth-child(even) {
 }
 
 /* --- Tarjetas de Carga (Drag & Drop) - ESTILOS MEJORADOS --- */
-/* --- Tarjetas de Carga (Drag & Drop) - ESTILOS MEJORADOS --- */
 .carga-card {
     background: linear-gradient(145deg, #ffffff 0%, #f0f5fa 100%); /* Degradado suave */
     border: 1px solid var(--border-color);
     border-left: 8px solid var(--primary-color); /* Borde izquierdo más grueso */
-    padding: 15px;
+    padding: 6px;
     border-radius: 12px; /* Esquinas más redondeadas */
     margin-bottom: 12px;
     cursor: grab;
@@ -309,6 +319,7 @@ table#tablaDistribucion tbody tr:nth-child(even) {
     flex-direction: column;
     gap: 8px; /* Aumento de espacio entre elementos */
     text-align: left;
+    min-width: 170px; 
 }
 
 .carga-card:hover {
@@ -326,7 +337,7 @@ table#tablaDistribucion tbody tr:nth-child(even) {
 }
 
 .carga-card .main-code {
-    font-size: 1.3em; /* Código más grande */
+    font-size: 1.1em; /* Código más grande */
     font-weight: 800; /* Más negrita */
     color: var(--primary-color-dark);
     flex-grow: 1;
@@ -557,4 +568,105 @@ table#tablaDistribucion tbody tr:nth-child(even) {
 
 #cargasTable tbody tr:last-child td {
     border-bottom: none;
+}
+
+
+/* Nuevo selector de modo */
+.mode-selector {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.mode-selector button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #e0e0e0;
+    color: #333;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.mode-selector button.active {
+    background-color: #007bff;
+    color: white;
+}
+
+/* Estilos para el modo Esmalte */
+#esmalteMode {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.esmalte-content h3 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#personal-section {
+    padding: 20px;
+}
+
+#personal-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.personal-card {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-align: center;
+    width: 120px; /* Ancho fijo */
+}
+
+.personal-card.active {
+    background-color: #28a745;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.personal-card h5 {
+    margin: 0;
+    font-size: 1.1em;
+}
+
+.personal-card small {
+    display: block;
+    color: #666;
+}
+
+/* Estilos de la tabla de esmalte (similar a la de cargas) */
+#esmalte-table-container {
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Nuevo estilo para la alineación del título y los botones */
+.header-with-mode {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Ajusta el margen del título para que no empuje los botones hacia abajo */
+.header-with-mode h2 {
+    margin: 0;
+}
+
+/* Ajusta los márgenes del selector de modo si es necesario */
+.mode-selector {
+    margin-bottom: 0;
+    margin-left: 20px; /* O el valor que prefieras para la separación */
 }
