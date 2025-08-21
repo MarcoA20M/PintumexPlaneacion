@@ -46,6 +46,12 @@ const rondasTotales = 4;
 const mapaMaquinaRondas = {};
 let cargasGuardadas = [];
 
+const equipoTerminado = ["Alberto", "Pedro", "Gaspar"];
+const equipoMoliendaPreparado = ["Germán", "Aldo"];
+let indiceTerminado = 0;
+let indiceMoliendaPreparado = 0;
+
+
 // Inicializar estructura de datos para cada máquina y ronda
 maquinas.forEach(m => {
     mapaMaquinaRondas[m] = {};
@@ -82,8 +88,13 @@ const modalCargas = document.getElementById('modalCargas');
 const closeModalButton = document.getElementById('closeModal');
 const cargasTableBody = document.querySelector('#cargasTable tbody');
 const asignarRondasBtn = document.getElementById('btnAsignarRondas');
+const btnAsignarEsmaltes = document.getElementById('btnAsignarEsmaltes');
 
-// ====== Funciones auxiliares ======
+// Loading Overlay
+const loadingOverlay = document.getElementById('loadingOverlay');
+
+
+// ====== Funciones auxiliares y lógica del negocio ======
 
 function getWeekNumber(d) {
     d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -143,60 +154,6 @@ function actualizarDistribucion() {
     return totalLitros;
 }
 
-function asignarCargaSegunPrioridad(nuevaCarga) {
-    const { litrosAsignados, prioridad, codigoPintura } = nuevaCarga;
-
-    const maquinas2400 = ["VI-108", "VI-104"];
-    const maquina1600 = "VI-107";
-    const maquinas850 = ["VI-101", "VI-102", "VI-103", "VI-105", "VI-106"];
-
-    function hayEspacio(maquina, ronda) {
-        const capacidadMaquina = capacidadesMaquinas[maquina];
-        const cargasEnRonda = mapaMaquinaRondas[maquina][ronda];
-        const totalEnRonda = cargasEnRonda.reduce((acc, c) => acc + (c.litrosAsignados || 0), 0);
-        
-        if ((totalEnRonda + litrosAsignados) > capacidadMaquina) {
-            return false;
-        }
-
-        if (cargasEnRonda.length >= 2 && cargasEnRonda.every(c => c.codigoPintura !== codigoPintura)) {
-            return false;
-        }
-        
-        return true;
-    }
-
-    if (litrosAsignados === 1600) {
-        for (let ronda = 1; ronda <= rondasTotales; ronda++) {
-            if (hayEspacio(maquina1600, ronda)) {
-                return { maquina: maquina1600, ronda };
-            }
-        }
-        return null;
-    } else if (litrosAsignados > 1600) {
-        for (const maquina of maquinas2400) {
-            for (let ronda = 1; ronda <= rondasTotales; ronda++) {
-                if (hayEspacio(maquina, ronda)) {
-                    return { maquina, ronda };
-                }
-            }
-        }
-        return null;
-    } else {
-        const ordenRondas = prioridad <= 10 ? [1, 2, 3, 4] : [4, 3, 2, 1];
-        const maquinasOrdenadas = [...maquinas850, maquina1600];
-
-        for (let ronda of ordenRondas) {
-            for (const maquina of maquinasOrdenadas) {
-                if (hayEspacio(maquina, ronda)) {
-                    return { maquina, ronda };
-                }
-            }
-        }
-    }
-
-    return null;
-}
 
 async function buscarProductoPorCodigo(codigo) {
     const modoActivo = modeEsmalte.classList.contains('active') ? 'esmalte' : 'vinilica';
@@ -281,23 +238,8 @@ async function cargarProductoPorCodigo() {
     }
 }
 
-function calcularDistribucionLitros(totalLitros) {
-    const cubetas = Math.floor(totalLitros / 19);
-    let resto = totalLitros % 19;
-    const galones = Math.floor(resto / 4);
-    resto = resto % 4;
-    const litros = Math.floor(resto / 1);
-    resto = resto % 1;
-    const medios = Math.round(resto / 0.5);
-    return { cubetas, galones, litros, medios };
-}
 
-function calcularLitrosEnMaquinaRonda(maquina, ronda) {
-    const cargas = mapaMaquinaRondas[maquina][ronda] || [];
-    return cargas.reduce((total, carga) => total + (carga.litrosAsignados || 0), 0);
-}
-
-// ====== Funciones para Renderizar Tabla y Guardar/Cargar Estado ======
+// ====== Funciones de Renderizado y Almacenamiento ======
 
 async function renderizarTabla() {
     tabla.innerHTML = '';
@@ -397,6 +339,83 @@ async function renderizarTabla() {
     }
 }
 
+function renderizarTablaEsmaltes(cargas) {
+    const contenedor = document.getElementById('esmalte-table-container');
+    contenedor.innerHTML = '';
+    
+    if (cargas.length === 0) {
+        contenedor.innerHTML = '<p class="info-message">No hay cargas de esmalte para mostrar.</p>';
+        return;
+    }
+    
+    const table = document.createElement('table');
+    table.classList.add('esmalte-table');
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Folio</th>
+                <th>Código</th>
+                <th>Tipo</th>
+                <th>Litros</th>
+                <th>Molienda/Preparado</th>
+                <th>Terminado</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    `;
+    
+    const tbody = table.querySelector('tbody');
+    cargas.forEach(carga => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${carga.folio}</td>
+            <td>${carga.codigoPintura}</td>
+            <td>${carga.tipo}</td>
+            <td>${carga.totalLitros.toFixed(2)}</td>
+            <td>${carga.asignadoMolienda || 'N/A'}</td>
+            <td>${carga.asignadoTerminado || 'N/A'}</td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    contenedor.appendChild(table);
+
+    const personalSection = document.getElementById('personal-section');
+    personalSection.innerHTML = '';
+    
+    if (cargas.length > 0) {
+        const moliendaPersonal = cargas.filter(c => c.asignadoMolienda).reduce((acc, c) => {
+            acc[c.asignadoMolienda] = (acc[c.asignadoMolienda] || 0) + 1;
+            return acc;
+        }, {});
+        
+        const terminadoPersonal = cargas.filter(c => c.asignadoTerminado).reduce((acc, c) => {
+            acc[c.asignadoTerminado] = (acc[c.asignadoTerminado] || 0) + 1;
+            return acc;
+        }, {});
+        
+        let htmlPersonal = '<h3>Resumen de Asignación</h3>';
+        htmlPersonal += `
+            <div class="resumen-item">
+                <h4>Molienda y Preparado</h4>
+                <ul>
+                    ${Object.entries(moliendaPersonal).map(([persona, count]) => `<li>${persona}: ${count} cargas</li>`).join('')}
+                </ul>
+            </div>
+            <div class="resumen-item">
+                <h4>Terminado</h4>
+                <ul>
+                    ${Object.entries(terminadoPersonal).map(([persona, count]) => `<li>${persona}: ${count} cargas</li>`).join('')}
+                </ul>
+            </div>
+        `;
+        personalSection.innerHTML = htmlPersonal;
+    } else {
+        personalSection.innerHTML = '<p class="info-message">No hay personal asignado.</p>';
+    }
+}
+
+
 function guardarEstado() {
     localStorage.setItem('mapaMaquinaRondas', JSON.stringify(mapaMaquinaRondas));
     localStorage.setItem('cargasGuardadas', JSON.stringify(cargasGuardadas));
@@ -423,11 +442,19 @@ function cambiarModo(modo) {
         modeVinilica.classList.remove('active');
         vinilicaSection.style.display = 'none';
         esmalteSection.style.display = 'block';
+        
+        // Renderizar cargas de esmalte existentes
+        const cargasEsmalte = cargasGuardadas.filter(c => c.tipoPintura === 'esmalte');
+        renderizarTablaEsmaltes(cargasEsmalte);
+
     } else {
         modeVinilica.classList.add('active');
         modeEsmalte.classList.remove('active');
         vinilicaSection.style.display = 'block';
         esmalteSection.style.display = 'none';
+
+        // Renderizar tabla de rondas vinílicas
+        renderizarTabla();
     }
     // Reiniciar el formulario y la información al cambiar de modo
     formCarga.reset();
@@ -504,8 +531,11 @@ formCarga.addEventListener('submit', async e => {
     formCarga.reset();
     actualizarDistribucion();
     infoDiv.style.display = 'none';
-    
-    mostrarCargasEnModal();
+
+    // Asignación directa para esmaltes
+    if (tipoPintura === 'esmalte') {
+        asignarCargasEsmalte();
+    }
 });
 
 
@@ -524,7 +554,7 @@ document.getElementById('btnRecomendar').addEventListener('click', () => {
         })
         .catch(error => {
             console.error('Error getting recommendations:', error);
-            document.getElementById('tablaRondas').innerHTML = '<p>Error loading recommendations. Make sure the Python server is running.</p>';
+            document.getElementById('tablaRondas').innerHTML = '<p class="error-message">Error al cargar las recomendaciones. Asegúrese de que el servidor de Python esté funcionando.</p>';
         });
 });
 
@@ -533,16 +563,16 @@ function mostrarRecomendacion(data) {
     contenedor.innerHTML = '';
 
     if (data.length === 0) {
-        contenedor.innerHTML = '<p>No recommendations at the moment.</p>';
+        contenedor.innerHTML = '<p class="info-message">No hay recomendaciones en este momento.</p>';
         return;
     }
 
-    let html = '<h3>Recommendation Order</h3>';
+    let html = '<h3>Orden de Recomendación</h3>';
     html += '<table class="recommendation-table">';
     html += '<thead><tr>' +
-        '<th>Color</th><th>Family</th><th>Article</th><th>Description</th>' +
-        '<th>Current Stock</th><th>Outflows</th><th>Calculated Reach (days)</th>' +
-        '<th>Order Liters</th><th>Buckets</th><th>Gallons</th><th>Liters</th>' +
+        '<th>Color</th><th>Familia</th><th>Artículo</th><th>Descripción</th>' +
+        '<th>Existencia Actual</th><th>Salidas</th><th>Alcance (días)</th>' +
+        '<th>Litros Pedido</th><th>Cubetas</th><th>Galones</th><th>Litros</th>' +
         '</tr></thead><tbody>';
 
     data.forEach(row => {
@@ -571,14 +601,21 @@ function mostrarCargasEnModal() {
     const cargasParaModal = JSON.parse(localStorage.getItem('cargasGuardadas')) || [];
     cargasTableBody.innerHTML = '';
     
-    if (cargasParaModal.length > 0) {
-        const cargasFiltradas = cargasParaModal.filter(c => c.tipoPintura === 'vinilica');
-        const cargasOrdenadas = cargasFiltradas.sort((a, b) => a.numero_base - b.numero_base);
+    const modoActivo = modeEsmalte.classList.contains('active') ? 'esmalte' : 'vinilica';
+    const cargasFiltradas = cargasParaModal.filter(c => c.tipoPintura === modoActivo);
+
+    if (cargasFiltradas.length > 0) {
+        const cargasOrdenadas = cargasFiltradas.sort((a, b) => {
+            if (a.tipoPintura === 'vinilica') {
+                return a.numero_base - b.numero_base;
+            }
+            return 0; // No ordenar esmaltes por ahora
+        });
         
         const folioBase = generarFolioBase();
         cargasOrdenadas.forEach((carga, index) => {
             const numero = String(index + 1).padStart(3, "0");
-            carga.folio = `V${folioBase.slice(1)}${numero}`;
+            carga.folio = `${folioBase}${numero}`;
         });
         
         localStorage.setItem('cargasGuardadas', JSON.stringify(cargasParaModal));
@@ -588,19 +625,29 @@ function mostrarCargasEnModal() {
             row.innerHTML = `
                 <td>${carga.folio}</td>
                 <td>${carga.codigoPintura}</td>
-                <td>${carga.numero_base}</td>
+                <td>${carga.tipoPintura === 'vinilica' ? carga.numero_base : carga.tipo}</td>
                 <td>${carga.totalLitros.toFixed(2)} L</td>
                 <td>${carga.fecha}</td>
             `;
             cargasTableBody.appendChild(row);
         });
-        asignarRondasBtn.style.display = 'inline-block';
+
+        if (modoActivo === 'vinilica') {
+            asignarRondasBtn.style.display = 'inline-block';
+            if (btnAsignarEsmaltes) btnAsignarEsmaltes.style.display = 'none';
+        } else {
+            asignarRondasBtn.style.display = 'none';
+            if (btnAsignarEsmaltes) btnAsignarEsmaltes.style.display = 'inline-block';
+        }
+
     } else {
         const row = document.createElement('tr');
         row.innerHTML = `<td colspan="5" style="text-align: center;">No hay cargas guardadas.</td>`;
         cargasTableBody.appendChild(row);
         asignarRondasBtn.style.display = 'none';
+        if (btnAsignarEsmaltes) btnAsignarEsmaltes.style.display = 'none';
     }
+    modalCargas.style.display = 'flex';
 }
 
 function asignarRondas() {
@@ -622,6 +669,45 @@ function asignarRondas() {
     modalCargas.style.display = 'none';
     
     renderizarTabla();
+}
+
+function asignarCargasEsmalte() {
+    const cargasEsmalte = cargasGuardadas.filter(c => c.tipoPintura === 'esmalte');
+    
+    // Separar cargas por tipo
+    const cargasUnaEtapa = cargasEsmalte.filter(c => c.tipo === 'Igualacion' || c.es_igualacion);
+    const cargasMultiplesEtapas = cargasEsmalte.filter(c => c.tipo !== 'Igualacion' && !c.es_igualacion);
+
+    // Limpiar asignaciones previas para una nueva asignación
+    cargasEsmalte.forEach(c => {
+        delete c.asignadoTerminado;
+        delete c.asignadoMolienda;
+    });
+
+    indiceTerminado = 0;
+    indiceMoliendaPreparado = 0;
+
+    // Asignar cargas de una sola etapa
+    cargasUnaEtapa.forEach(carga => {
+        carga.asignadoTerminado = equipoTerminado[indiceTerminado];
+        indiceTerminado = (indiceTerminado + 1) % equipoTerminado.length;
+    });
+
+    // Asignar cargas de múltiples etapas
+    cargasMultiplesEtapas.forEach(carga => {
+        carga.asignadoMolienda = equipoMoliendaPreparado[indiceMoliendaPreparado];
+        indiceMoliendaPreparado = (indiceMoliendaPreparado + 1) % equipoMoliendaPreparado.length;
+        
+        carga.asignadoTerminado = equipoTerminado[indiceTerminado];
+        indiceTerminado = (indiceTerminado + 1) % equipoTerminado.length;
+    });
+    
+    // Actualizar la vista de la tabla de esmaltes
+    renderizarTablaEsmaltes(cargasEsmalte);
+
+    // Borrar las cargas de esmalte de la lista principal
+    cargasGuardadas = cargasGuardadas.filter(c => c.tipoPintura !== 'esmalte');
+    guardarEstado(); // Guardar el nuevo estado con las asignaciones y sin las cargas de esmalte pendientes
 }
 
 
@@ -729,7 +815,12 @@ window.onload = () => {
     cargarEstado();
     inicializarFolio();
     actualizarDistribucion();
-    renderizarTabla();
+    if (modeVinilica.classList.contains('active')) {
+        renderizarTabla();
+    } else {
+        const cargasEsmalte = cargasGuardadas.filter(c => c.tipoPintura === 'esmalte');
+        renderizarTablaEsmaltes(cargasEsmalte);
+    }
 };
 
 // --- Drag and Drop ---
@@ -809,6 +900,7 @@ document.getElementById('exportarWord').addEventListener('click', async function
     const originalText = exportButton.innerHTML;
     
     try {
+        loadingOverlay.style.display = 'flex';
         exportButton.textContent = 'Generando...';
         exportButton.disabled = true;
         
@@ -867,6 +959,7 @@ document.getElementById('exportarWord').addEventListener('click', async function
         console.error("Error during Word export:", error);
         alert('Ocurrió un error inesperado al generar el archivo. Por favor, revisa la consola para más detalles.');
     } finally {
+        loadingOverlay.style.display = 'none';
         exportButton.textContent = originalText;
         exportButton.disabled = false;
     }
@@ -874,15 +967,23 @@ document.getElementById('exportarWord').addEventListener('click', async function
 
 // Event Listeners for Modal
 verCargasButton.addEventListener('click', () => {
-    mostrarCargasEnModal();
-    modalCargas.style.display = 'flex';
+    // Si el modo es vinílica, muestra el modal de cargas pendientes.
+    if (modeVinilica.classList.contains('active')) {
+        mostrarCargasEnModal();
+    } else {
+        // Si el modo es esmalte, no hace nada, la asignación es directa.
+        alert('En el modo Esmalte, las cargas se asignan automáticamente al agregar.');
+    }
 });
 
 closeModalButton.addEventListener('click', () => {
     modalCargas.style.display = 'none';
 });
 
-asignarRondasBtn.addEventListener('click', asignarRondas);
+asignarRondasBtn.addEventListener('click', () => {
+    modalCargas.style.display = 'none';
+    asignarRondas();
+});
 
 window.addEventListener('click', (event) => {
     if (event.target === modalCargas) {
