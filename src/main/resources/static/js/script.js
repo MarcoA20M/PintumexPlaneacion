@@ -61,10 +61,10 @@ maquinas.forEach(m => {
 });
 
 // ====== Variables DOM ======
-const folioInput = document.getElementById('folio');
+
 const codigoInput = document.getElementById('codigo');
 const descSpan = document.getElementById('descProducto');
-const baseSpan = document.getElementById('baseProducto');
+//const baseSpan = document.getElementById('baseProducto');
 const categoriaSpan = document.getElementById('categoriaProducto');
 const prioridadSpan = document.getElementById('prioridadProducto');
 const infoDiv = document.getElementById('infoProducto');
@@ -127,7 +127,7 @@ function inicializarFolio() {
     const numCargas = cargasGuardadas.filter(c => c.tipoPintura === (modeEsmalte.classList.contains('active') ? 'esmalte' : 'vinilica')).length + 1;
     const numero = String(numCargas).padStart(3, "0");
     const fechaString = generarFolioBase();
-    folioInput.value = `${fechaString}${numero}`;
+   
 }
 
 function actualizarDistribucion() {
@@ -213,13 +213,8 @@ async function cargarProductoPorCodigo() {
     if (producto) {
         descSpan.textContent = producto.descripcion;
         
-        if (producto.base) {
-            baseSpan.textContent = producto.base;
-        } else if (producto.tipo) {
-            baseSpan.textContent = producto.tipo;
-        } else {
-            baseSpan.textContent = 'N/A';
-        }
+        // Borraste la variable, así que también debes borrar este bloque de código
+        // que intenta usarla.
         
         categoriaSpan.textContent = producto.categoria.nombre;
         prioridadSpan.textContent = producto.categoria.prioridad;
@@ -228,7 +223,8 @@ async function cargarProductoPorCodigo() {
         return producto;
     } else {
         descSpan.textContent = '';
-        baseSpan.textContent = '';
+        // Esta línea ya la habías comentado, lo cual es correcto
+        // baseSpan.textContent = '';
         categoriaSpan.textContent = '';
         prioridadSpan.textContent = '';
         infoDiv.style.display = 'none';
@@ -339,57 +335,77 @@ async function renderizarTabla() {
     }
 }
 
+// ... (código anterior sin cambios)
+
 function renderizarTablaEsmaltes(cargas) {
-    const contenedor = document.getElementById('esmalte-table-container');
+    const contenedor = document.getElementById('esmalte-cards-container');
     contenedor.innerHTML = '';
     
-    if (cargas.length === 0) {
-        contenedor.innerHTML = '<p class="info-message">No hay cargas de esmalte para mostrar.</p>';
+    const cargasMadre = cargas.filter(carga => carga.tipoOrden === 'madre');
+
+    if (cargasMadre.length === 0) {
+        contenedor.innerHTML = '<p class="info-message">No hay cargas de esmalte para mostrar. 😥</p>';
         return;
     }
-    
-    const table = document.createElement('table');
-    table.classList.add('esmalte-table');
-    table.innerHTML = `
-        <thead>
-            <tr>
-                <th>Folio</th>
-                <th>Código</th>
-                <th>Tipo</th>
-                <th>Litros</th>
-                <th>Molienda/Preparado</th>
-                <th>Terminado</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    `;
-    
-    const tbody = table.querySelector('tbody');
-    cargas.forEach(carga => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${carga.folio}</td>
-            <td>${carga.codigoPintura}</td>
-            <td>${carga.tipo}</td>
-            <td>${carga.totalLitros.toFixed(2)}</td>
-            <td>${carga.asignadoMolienda || 'N/A'}</td>
-            <td>${carga.asignadoTerminado || 'N/A'}</td>
-        `;
-        tbody.appendChild(row);
-    });
 
-    contenedor.appendChild(table);
+    // Sin ordenación, se respeta el orden de ingreso
+    const cargasOrdenadas = [...cargasMadre]; 
+
+    cargasOrdenadas.forEach(carga => {
+        const card = document.createElement('div');
+        card.className = 'carga-card esmalte-card';
+        card.dataset.folio = carga.folio;
+        card.dataset.codigo = carga.codigoPintura;
+        card.dataset.tipo = carga.tipo;
+        card.dataset.litros = carga.totalLitros;
+        
+        let distributionDetailsHtml = '';
+        let detailsArray = [];
+
+        if (carga.cubetas > 0) {
+            detailsArray.push(`19 L: ${carga.cubetas}`);
+        }
+        if (carga.galones > 0) {
+            detailsArray.push(`4 L: ${carga.galones}`);
+        }
+        if (carga.litros_envase > 0) {
+            detailsArray.push(`1 L: ${carga.litros_envase}`);
+        }
+        if (carga.medios > 0) {
+            detailsArray.push(`0.5 L: ${carga.medios}`);
+        }
+
+        distributionDetailsHtml = detailsArray.join(' | ');
+
+        // Tu diseño original, ahora más compacto
+        card.innerHTML = `
+            <div class="header-content">
+                <div class="main-code">Folio: ${carga.folio}</div>
+                <div class="litros-total-circulo">${Math.round(carga.totalLitros)} L</div>
+            </div>
+            <div class="card-body">
+                <div class="descripcion"><strong>Producto:</strong> ${carga.codigoPintura}</div>
+                <div class="distribucion"><strong>Tipo:</strong> ${carga.tipo}</div>
+                <div class="distribucion"><strong>Distribución:</strong> ${distributionDetailsHtml}</div>
+            </div>
+            <div class="card-footer">
+                <div><strong>Molienda:</strong> ${carga.asignadoMolienda || 'N/A'}</div>
+                <div><strong>Terminado:</strong> ${carga.asignadoTerminado || 'N/A'}</div>
+            </div>
+        `;
+        contenedor.appendChild(card);
+    });
 
     const personalSection = document.getElementById('personal-section');
     personalSection.innerHTML = '';
     
-    if (cargas.length > 0) {
-        const moliendaPersonal = cargas.filter(c => c.asignadoMolienda).reduce((acc, c) => {
+    if (cargasMadre.length > 0) { 
+        const moliendaPersonal = cargasMadre.filter(c => c.asignadoMolienda).reduce((acc, c) => {
             acc[c.asignadoMolienda] = (acc[c.asignadoMolienda] || 0) + 1;
             return acc;
         }, {});
         
-        const terminadoPersonal = cargas.filter(c => c.asignadoTerminado).reduce((acc, c) => {
+        const terminadoPersonal = cargasMadre.filter(c => c.asignadoTerminado).reduce((acc, c) => {
             acc[c.asignadoTerminado] = (acc[c.asignadoTerminado] || 0) + 1;
             return acc;
         }, {});
@@ -411,8 +427,64 @@ function renderizarTablaEsmaltes(cargas) {
         `;
         personalSection.innerHTML = htmlPersonal;
     } else {
-        personalSection.innerHTML = '<p class="info-message">No hay personal asignado.</p>';
+        personalSection.innerHTML = '<p class="info-message">No hay personal asignado. 😥</p>';
     }
+}
+
+
+function asignarCargasEsmalte() {
+    let cargasEsmalte = cargasGuardadas.filter(c => c.tipoPintura === 'esmalte');
+    
+    // Primero, ordenar todas las cargas existentes por su timestamp original (folio temporal)
+    cargasEsmalte.sort((a, b) => {
+        const aTimestamp = a.folio.split('-')[1];
+        const bTimestamp = b.folio.split('-')[1];
+        return aTimestamp - bTimestamp;
+    });
+
+    // Separar cargas con asignación y sin ella
+    const cargasAsignadas = cargasEsmalte.filter(c => c.asignadoMolienda || c.asignadoTerminado);
+    const cargasSinAsignar = cargasEsmalte.filter(c => !c.asignadoMolienda && !c.asignadoTerminado);
+
+    // Encontrar los índices de los últimos miembros asignados para continuar el ciclo
+    let ultimoMolienda = cargasAsignadas.findLast(c => c.asignadoMolienda)?.asignadoMolienda;
+    let ultimoTerminado = cargasAsignadas.findLast(c => c.asignadoTerminado)?.asignadoTerminado;
+    
+    let indiceMolienda = ultimoMolienda ? (equipoMoliendaPreparado.indexOf(ultimoMolienda) + 1) % equipoMoliendaPreparado.length : 0;
+    let indiceTerminado = ultimoTerminado ? (equipoTerminado.indexOf(ultimoTerminado) + 1) % equipoTerminado.length : 0;
+    
+    // Asignar personal a las cargas que no tienen asignación
+    cargasSinAsignar.forEach(carga => {
+        if (carga.tipo === 'Igualacion' || carga.es_igualacion) {
+            // Asignar solo a terminado para igualaciones
+            carga.asignadoTerminado = equipoTerminado[indiceTerminado];
+            indiceTerminado = (indiceTerminado + 1) % equipoTerminado.length;
+        } else {
+            // Asignar a molienda y terminado para el resto
+            carga.asignadoMolienda = equipoMoliendaPreparado[indiceMolienda];
+            indiceMolienda = (indiceMolienda + 1) % equipoMoliendaPreparado.length;
+            
+            carga.asignadoTerminado = equipoTerminado[indiceTerminado];
+            indiceTerminado = (indiceTerminado + 1) % equipoTerminado.length;
+        }
+        carga.tipoOrden = 'madre';
+    });
+
+    // Unir todas las cargas y reasignar folios de manera consecutiva
+    const todasLasCargasAsignadas = [...cargasAsignadas, ...cargasSinAsignar];
+    
+    // Asignar folios nuevos y consecutivos basándose en el orden original
+    const folioBase = generarFolioBase();
+    todasLasCargasAsignadas.forEach((carga, index) => {
+        const numero = String(index + 1).padStart(3, "0");
+        carga.folio = `${folioBase}${numero}`;
+    });
+
+    const cargasVinilicas = cargasGuardadas.filter(c => c.tipoPintura === 'vinilica');
+    cargasGuardadas = [...cargasVinilicas, ...todasLasCargasAsignadas];
+
+    guardarEstado();
+    renderizarTablaEsmaltes(todasLasCargasAsignadas);
 }
 
 
@@ -442,6 +514,9 @@ function cambiarModo(modo) {
         modeVinilica.classList.remove('active');
         vinilicaSection.style.display = 'none';
         esmalteSection.style.display = 'block';
+        
+        // Asignar personal a las cargas de esmalte existentes
+        asignarCargasEsmalte();
         
         // Renderizar cargas de esmalte existentes
         const cargasEsmalte = cargasGuardadas.filter(c => c.tipoPintura === 'esmalte');
@@ -476,6 +551,7 @@ formCarga.addEventListener('submit', async e => {
     if (!codigo) {
         mensaje.style.color = 'red';
         mensaje.textContent = 'Código requerido.';
+        mensaje.style.display = 'block'; // Muestra el mensaje de error
         return;
     }
 
@@ -483,6 +559,7 @@ formCarga.addEventListener('submit', async e => {
     if (!producto) {
         mensaje.style.color = 'red';
         mensaje.textContent = 'Producto no encontrado.';
+        mensaje.style.display = 'block'; // Muestra el mensaje de error
         return;
     }
 
@@ -495,6 +572,7 @@ formCarga.addEventListener('submit', async e => {
     if (totalLitros <= 0) {
         mensaje.style.color = 'red';
         mensaje.textContent = 'Ingresa cantidades válidas.';
+        mensaje.style.display = 'block'; // Muestra el mensaje de error
         return;
     }
 
@@ -525,8 +603,15 @@ formCarga.addEventListener('submit', async e => {
     guardarEstado();
 
     inicializarFolio();
+    
+    // Muestra el mensaje de éxito y lo oculta después de 3 segundos
     mensaje.style.color = 'green';
-    mensaje.textContent = `Carga agregada. Folio temporal: ${cargaParaLista.folio}`;
+    mensaje.textContent = 'Carga agregada. ✔️';
+    mensaje.style.display = 'block'; 
+    setTimeout(() => {
+        mensaje.style.display = 'none';
+        mensaje.textContent = ''; // Limpia el texto
+    }, 3000); 
 
     formCarga.reset();
     actualizarDistribucion();
@@ -538,6 +623,12 @@ formCarga.addEventListener('submit', async e => {
     }
 });
 
+
+verCargasButton.addEventListener('click', mostrarCargasEnModal); 
+closeModalButton.addEventListener('click', () => {
+    modalCargas.style.display = 'none';
+});
+asignarRondasBtn.addEventListener('click', asignarRondas);
 
 // Event Listeners
 codigoInput.addEventListener('blur', cargarProductoPorCodigo);
@@ -672,28 +763,29 @@ function asignarRondas() {
 }
 
 function asignarCargasEsmalte() {
-    const cargasEsmalte = cargasGuardadas.filter(c => c.tipoPintura === 'esmalte');
+    let cargasEsmalte = cargasGuardadas.filter(c => c.tipoPintura === 'esmalte');
     
-    // Separar cargas por tipo
-    const cargasUnaEtapa = cargasEsmalte.filter(c => c.tipo === 'Igualacion' || c.es_igualacion);
-    const cargasMultiplesEtapas = cargasEsmalte.filter(c => c.tipo !== 'Igualacion' && !c.es_igualacion);
-
-    // Limpiar asignaciones previas para una nueva asignación
+    // Limpiar asignaciones previas
     cargasEsmalte.forEach(c => {
         delete c.asignadoTerminado;
         delete c.asignadoMolienda;
     });
 
-    indiceTerminado = 0;
-    indiceMoliendaPreparado = 0;
+    // Se reinician los índices de los equipos para una nueva asignación
+    let indiceTerminado = 0;
+    let indiceMoliendaPreparado = 0;
+    
+    // Se crean dos listas temporales para separar por tipo de proceso
+    const cargasUnaEtapa = cargasEsmalte.filter(c => c.tipo === 'Igualacion' || c.es_igualacion);
+    const cargasMultiplesEtapas = cargasEsmalte.filter(c => c.tipo !== 'Igualacion' && !c.es_igualacion);
 
-    // Asignar cargas de una sola etapa
+    // Asignar personal a las cargas de una sola etapa
     cargasUnaEtapa.forEach(carga => {
         carga.asignadoTerminado = equipoTerminado[indiceTerminado];
         indiceTerminado = (indiceTerminado + 1) % equipoTerminado.length;
     });
 
-    // Asignar cargas de múltiples etapas
+    // Asignar personal a las cargas de múltiples etapas
     cargasMultiplesEtapas.forEach(carga => {
         carga.asignadoMolienda = equipoMoliendaPreparado[indiceMoliendaPreparado];
         indiceMoliendaPreparado = (indiceMoliendaPreparado + 1) % equipoMoliendaPreparado.length;
@@ -701,13 +793,74 @@ function asignarCargasEsmalte() {
         carga.asignadoTerminado = equipoTerminado[indiceTerminado];
         indiceTerminado = (indiceTerminado + 1) % equipoTerminado.length;
     });
-    
-    // Actualizar la vista de la tabla de esmaltes
-    renderizarTablaEsmaltes(cargasEsmalte);
 
-    // Borrar las cargas de esmalte de la lista principal
+    // Ahora, asigna folios y separa las cargas en "madres" e "hijas"
+    const cargasConHijas = [];
+    let contadorFolios = 1;
+    const folioBase = generarFolioBase();
+
+    const todasLasCargasAsignadas = [...cargasUnaEtapa, ...cargasMultiplesEtapas];
+    todasLasCargasAsignadas.sort((a, b) => a.folio.localeCompare(b.folio));
+
+    todasLasCargasAsignadas.forEach(cargaMadre => {
+        // Asignar y guardar la carga "madre"
+        const numeroMadre = String(contadorFolios).padStart(3, "0");
+        cargaMadre.folio = `${folioBase}${numeroMadre}`;
+        cargasConHijas.push(cargaMadre);
+        contadorFolios++;
+        
+        // Crear cargas "hijas" para cada tipo de envase
+        if (cargaMadre.cubetas > 0) {
+            const numeroHija = String(contadorFolios).padStart(3, "0");
+            cargasConHijas.push({
+                ...cargaMadre, // Copiar todos los datos de la madre
+                folio: `${folioBase}${numeroHija}`,
+                totalLitros: cargaMadre.cubetas * 19,
+                tipoOrden: 'hija',
+                paquete: `Cubetas: ${cargaMadre.cubetas}`,
+            });
+            contadorFolios++;
+        }
+        if (cargaMadre.galones > 0) {
+            const numeroHija = String(contadorFolios).padStart(3, "0");
+            cargasConHijas.push({
+                ...cargaMadre,
+                folio: `${folioBase}${numeroHija}`,
+                totalLitros: cargaMadre.galones * 4,
+                tipoOrden: 'hija',
+                paquete: `Galones: ${cargaMadre.galones}`,
+            });
+            contadorFolios++;
+        }
+        if (cargaMadre.litros_envase > 0) {
+            const numeroHija = String(contadorFolios).padStart(3, "0");
+            cargasConHijas.push({
+                ...cargaMadre,
+                folio: `${folioBase}${numeroHija}`,
+                totalLitros: cargaMadre.litros_envase * 1,
+                tipoOrden: 'hija',
+                paquete: `Litros: ${cargaMadre.litros_envase}`,
+            });
+            contadorFolios++;
+        }
+        if (cargaMadre.medios > 0) {
+            const numeroHija = String(contadorFolios).padStart(3, "0");
+            cargasConHijas.push({
+                ...cargaMadre,
+                folio: `${folioBase}${numeroHija}`,
+                totalLitros: cargaMadre.medios * 0.5,
+                tipoOrden: 'hija',
+                paquete: `Medios: ${cargaMadre.medios}`,
+            });
+            contadorFolios++;
+        }
+    });
+
+    renderizarTablaEsmaltes(cargasConHijas);
+    
+    // Filtra las cargas guardadas para que solo queden las vinílicas
     cargasGuardadas = cargasGuardadas.filter(c => c.tipoPintura !== 'esmalte');
-    guardarEstado(); // Guardar el nuevo estado con las asignaciones y sin las cargas de esmalte pendientes
+    guardarEstado();
 }
 
 
@@ -818,8 +971,7 @@ window.onload = () => {
     if (modeVinilica.classList.contains('active')) {
         renderizarTabla();
     } else {
-        const cargasEsmalte = cargasGuardadas.filter(c => c.tipoPintura === 'esmalte');
-        renderizarTablaEsmaltes(cargasEsmalte);
+        cambiarModo('esmalte'); // Llama a la función completa para asegurar la renderización y asignación
     }
 };
 
@@ -875,19 +1027,15 @@ function habilitarDragAndDrop() {
                     const totalEnNuevaRonda = cargasEnNuevaRonda.reduce((acc, c) => acc + (c.litrosAsignados || 0), 0);
                     const isSameCode = cargasEnNuevaRonda.every(c => c.codigoPintura === cargaToMove.codigoPintura) || cargasEnNuevaRonda.length === 0;
 
-                    if (
-                        (totalEnNuevaRonda + cargaToMove.litrosAsignados) <= capacidadNuevaMaquina &&
-                        (cargasEnNuevaRonda.length < 2 || isSameCode)
-                    ) {
+                    if (isSameCode && (totalEnNuevaRonda + (cargaToMove.litrosAsignados || 0)) <= capacidadNuevaMaquina) {
+                        cargaToMove.maquinaAsignada = newMaquina;
+                        cargaToMove.rondaAsignada = newRonda;
                         mapaMaquinaRondas[newMaquina][newRonda].push(cargaToMove);
-                        draggedItem.dataset.maquina = newMaquina;
-                        draggedItem.dataset.ronda = newRonda;
                         guardarEstado();
                         renderizarTabla();
                     } else {
-                        console.warn("Cannot move load: capacity exceeded or mixing rules violated.");
                         oldCargas.splice(indexToRemove, 0, cargaToMove);
-                        renderizarTabla();
+                        alert("No se puede mover la carga. La capacidad de la máquina se excederá o no se puede mezclar con otro código.");
                     }
                 }
             }
@@ -895,98 +1043,120 @@ function habilitarDragAndDrop() {
     });
 }
 
-document.getElementById('exportarWord').addEventListener('click', async function() {
-    const exportButton = this;
+
+// Asegúrate de que este archivo sea una continuación de tu script.js
+// o reemplaza la sección de exportación.
+
+// ... (todo el código JavaScript anterior) ...
+
+// Nuevo código para el botón de exportar
+document.addEventListener('DOMContentLoaded', function() {
+    const exportButton = document.getElementById('exportarVinilicas');
+    const pythonServiceUrl = 'http://localhost:5000/generate-report'; 
+
     const originalText = exportButton.innerHTML;
-    
-    try {
-        loadingOverlay.style.display = 'flex';
+    const spinner = exportButton.querySelector('.loading-spinner');
+
+    exportButton.addEventListener('click', async function() {
+        spinner.style.display = 'inline-block';
         exportButton.textContent = 'Generando...';
         exportButton.disabled = true;
-        
-        const todasLasCargas = [];
-        for (const maquina in mapaMaquinaRondas) {
-            for (const ronda in mapaMaquinaRondas[maquina]) {
-                mapaMaquinaRondas[maquina][ronda]
-                    .filter(c => c.tipoOrden === 'madre')
-                    .forEach(carga => {
-                        todasLasCargas.push({
-                            folio: carga.folio,
-                            codigoPintura: carga.codigoPintura,
-                            litrosAsignados: carga.litrosAsignados,
-                            dispersor: maquina,
-                            rondaAsignada: ronda,
-                            medios: carga.medios || 0,
-                            litros_envase: carga.litros_envase || 0,
-                            galones: carga.galones || 0,
-                            cubetas: carga.cubetas || 0
-                        });
-                    });
+        exportButton.style.opacity = '0.7';
+
+        try {
+            // Recopilar cargas de vinílicas ya asignadas
+            const cargasVinilicas = [];
+            if (typeof mapaMaquinaRondas !== 'undefined') {
+                for (const maquina in mapaMaquinaRondas) {
+                    for (const ronda in mapaMaquinaRondas[maquina]) {
+                        mapaMaquinaRondas[maquina][ronda]
+                            .filter(c => c.tipoOrden === 'madre')
+                            .forEach(carga => {
+                                // Asegurar que los datos estén en el formato correcto
+                                const envasado = carga.medios !== undefined ? {
+                                    medios: carga.medios,
+                                    litros_envase: carga.litros_envase,
+                                    galones: carga.galones,
+                                    cubetas: carga.cubetas
+                                } : { medios: 0, litros_envase: 0, galones: 0, cubetas: 0 };
+                                
+                                cargasVinilicas.push({
+                                    folio: carga.folio,
+                                    codigoPintura: carga.codigoPintura,
+                                    litrosAsignados: carga.litrosAsignados,
+                                    dispersor: maquina,
+                                    rondaAsignada: ronda,
+                                    ...envasado
+                                });
+                            });
+                    }
+                }
             }
+            
+            // Recopilar cargas de esmaltes
+            // Asume que cargasGuardadas es un array global que almacena las cargas de esmalte
+            const cargasEsmaltes = cargasGuardadas.filter(c => c.tipoPintura === 'esmalte');
+
+            // Enviar ambas listas al servidor
+            const response = await fetch(pythonServiceUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    cargas_vinilicas: cargasVinilicas,
+                    cargas_esmaltes: cargasEsmaltes
+                })
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `Reporte_Produccion_${new Date().toISOString().split('T')[0]}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                exportButton.innerHTML = 'Exportado ✔️';
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `Error en el servidor: ${response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Error al exportar:', error);
+            exportButton.innerHTML = 'Error ❌';
+            alert(`Error: ${error.message}\nVerifica que el servidor Python esté corriendo.`);
+        } finally {
+            spinner.style.display = 'none';
+            exportButton.disabled = false;
+            exportButton.style.opacity = '1';
+            
+            setTimeout(() => {
+                exportButton.innerHTML = originalText;
+            }, 3000);
         }
-
-        while (todasLasCargas.length < 8) {
-            todasLasCargas.push(null);
-        }
-
-        const response = await fetch('http://localhost:5000/generate-identificadores', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-                cargas: todasLasCargas,
-                timestamp: new Date().toISOString()
-            })
-        });
-
-        if (response.ok) {
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = `Identificadores_Ordenes_${new Date().toISOString().slice(0, 10)}.docx`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            alert('El archivo de Word ha sido generado y descargado correctamente.');
-        } else {
-            const errorText = await response.text();
-            alert(`Error al generar el archivo de Word: ${errorText}`);
-        }
-    } catch (error) {
-        console.error("Error during Word export:", error);
-        alert('Ocurrió un error inesperado al generar el archivo. Por favor, revisa la consola para más detalles.');
-    } finally {
-        loadingOverlay.style.display = 'none';
-        exportButton.textContent = originalText;
-        exportButton.disabled = false;
-    }
+    });
 });
 
-// Event Listeners for Modal
-verCargasButton.addEventListener('click', () => {
-    // Si el modo es vinílica, muestra el modal de cargas pendientes.
-    if (modeVinilica.classList.contains('active')) {
-        mostrarCargasEnModal();
-    } else {
-        // Si el modo es esmalte, no hace nada, la asignación es directa.
-        alert('En el modo Esmalte, las cargas se asignan automáticamente al agregar.');
-    }
-});
 
-closeModalButton.addEventListener('click', () => {
-    modalCargas.style.display = 'none';
-});
+// Dentro del event listener del formulario
+form.addEventListener('submit', (event) => {
+    event.preventDefault();
 
-asignarRondasBtn.addEventListener('click', () => {
-    modalCargas.style.display = 'none';
-    asignarRondas();
-});
+    // 1. Obtiene el elemento del mensaje
+    const mensajeElemento = document.getElementById('mensaje');
 
-window.addEventListener('click', (event) => {
-    if (event.target === modalCargas) {
-        modalCargas.style.display = 'none';
-    }
+    // 2. Muestra el mensaje con el texto deseado
+    mensajeElemento.textContent = 'Carga agregada ✔️';
+    mensajeElemento.style.display = 'block';
+
+    // 3. Oculta el mensaje después de 3 segundos
+    setTimeout(() => {
+        mensajeElemento.style.display = 'none';
+        mensajeElemento.textContent = ''; // Limpia el texto por si acaso
+    }, 3000); // 3000 milisegundos = 3 segundos
+
+    // Tu código para procesar la carga va aquí...
 });

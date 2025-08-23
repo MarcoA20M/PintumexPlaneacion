@@ -61,4 +61,9 @@ public class ProductoPinturaController {
         productoPinturaService.deleteProducto(id);
         return ResponseEntity.noContent().build();
     }
+
+
+
+
+    
 }

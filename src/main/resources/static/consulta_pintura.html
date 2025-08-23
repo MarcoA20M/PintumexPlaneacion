@@ -14,19 +14,16 @@
 <div class="container">
     <div class="main-content-grid">
         <div class="form-section card">
-            <h2>Crear Carga</h2>
-            
-            <div class="mode-selector">
-                <button id="modeVinilica" class="active">Pintura Vinílica</button>
-                <button id="modeEsmalte">Pintura de Esmalte</button>
+            <div class="header-controls">
+                <h2>Crear Carga</h2>
+                <div class="mode-selector">
+                    <button id="modeVinilica" class="active">Pintura Vinílica</button>
+                    <button id="modeEsmalte">Pintura de Esmalte</button>
+                </div>
             </div>
 
             <form id="formCarga">
-                <div class="input-group">
-                    <label for="folio">Folio</label>
-                    <input type="text" id="folio" readonly disabled />
-                    <small>Este folio se genera automáticamente.</small>
-                </div>
+                
 
                 <div class="input-group">
                     <label for="codigo">Código de Pintura</label>
@@ -59,7 +56,7 @@
                 <div class="form-buttons">
                     <button type="submit" class="button-primary">Agregar Carga</button>
                     
-                    <button type="button" id="verCargas" class="button-secondary">Lista de Cargas</button> 
+                    <button type="button" id="verCargas" class="button-secondary">Lista de Cargas</button>
                     <button type="button" id="btnRecomendar" class="button-secondary">Recomendar Programación</button>
                 </div>
                 <p id="mensaje"></p>
@@ -67,13 +64,19 @@
         </div>
 
         <div class="right-column">
-            <div id="infoProducto" class="info-box card" style="display:none;">
-                <h3>Información del Producto</h3>
-                <p><strong>Descripción:</strong> <span id="descProducto"></span></p>
-                <p><strong>Base:</strong> <span id="baseProducto"></span></p>
-                <p><strong>Categoría:</strong> <span id="categoriaProducto"></span></p>
-                <p><strong>Prioridad:</strong> <span id="prioridadProducto"></span></p>
-            </div>
+           <div class="right-column">
+    <div id="infoProducto" class="info-box card" style="display:none;">
+        <h3>Información del Producto</h3>
+        <div class="product-info-line">
+            <p><strong>Descripción:</strong> <span id="descProducto"></span></p>
+            <p><strong>Categoría:</strong> <span id="categoriaProducto"></span></p>
+            <p><strong>Prioridad:</strong> <span id="prioridadProducto"></span></p>
+            
+        </div>
+    </div>
+    
+   
+</div>
 
             <div class="distribution-section card">
                 <h3>Vista previa distribución</h3>
@@ -129,7 +132,7 @@
             <button id="guardarBD" class="button-primary">Guardar en BD</button>
             <button id="exportarWord" class="button-tertiary">Exportar a Word</button>
             <button id="exportarVinilicas" class="button-tertiary">
-                Exportar reporte de vinílicas
+                Exportar reporte de producción
                 <span class="loading-spinner" style="display:none;"></span>
             </button>
         </div>
@@ -138,13 +141,9 @@
     <div id="esmalteMode" style="display: none;">
         <div class="esmalte-content">
             <h3>Cargas de Esmalte</h3>
-            <div id="esmalte-table-container">
+            <div id="esmalte-cards-container">
                 </div>
-            <div id="personal-section" class="card">
-                <h4>Asignar Personal</h4>
-                <div id="personal-list">
-                    </div>
-            </div>
+            
         </div>
     </div>
 </div>
@@ -178,98 +177,7 @@
     </div>
 </div>
 <script src="js/script.js"></script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const exportButton = document.getElementById('exportarVinilicas');
-        const pythonServiceUrl = 'http://localhost:5000/generate-report'; 
-
-        const originalText = exportButton.innerHTML;
-        const spinner = exportButton.querySelector('.loading-spinner');
-
-        exportButton.addEventListener('click', async function() {
-            spinner.style.display = 'inline-block';
-            exportButton.textContent = 'Generando...';
-            exportButton.disabled = true;
-            exportButton.style.opacity = '0.7';
-
-            try {
-                const todasLasCargasMadre = [];
-                if (typeof mapaMaquinaRondas !== 'undefined') {
-                    for (const maquina in mapaMaquinaRondas) {
-                        for (const ronda in mapaMaquinaRondas[maquina]) {
-                            mapaMaquinaRondas[maquina][ronda]
-                                .filter(c => c.tipoOrden === 'madre')
-                                .forEach(carga => {
-                                    const envasado = carga.medios !== undefined ? {
-                                        medios: carga.medios,
-                                        litros_envase: carga.litros_envase || carga.litros,
-                                        galones: carga.galones,
-                                        cubetas: carga.cubetas
-                                    } : calcularDistribucionLitros(carga.litrosAsignados);
-                                    
-                                    todasLasCargasMadre.push({
-                                        folio: carga.folio,
-                                        codigoPintura: carga.codigoPintura,
-                                        litrosAsignados: carga.litrosAsignados,
-                                        dispersor: maquina, 
-                                        rondaAsignada: ronda,
-                                        medios: envasado.medios,
-                                        litros_envase: envasado.litros_envase,
-                                        galones: envasado.galones,
-                                        cubetas: envasado.cubetas
-                                    });
-                                });
-                        }
-                    }
-                    while (todasLasCargasMadre.length < 36) {
-                        todasLasCargasMadre.push(null);
-                    }
-                }
-                
-                const response = await fetch(pythonServiceUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ 
-                        cargas: todasLasCargasMadre,
-                        timestamp: new Date().toISOString()
-                    })
-                });
-
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = url;
-                    a.download = `Reporte_Vinilicas_${new Date().toISOString().split('T')[0]}.xlsx`;
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    exportButton.innerHTML = 'Exportado ✔️';
-                } else {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || `Error en el servidor: ${response.statusText}`);
-                }
-            } catch (error) {
-                console.error('Error al exportar:', error);
-                exportButton.innerHTML = 'Error ❌';
-                alert(`Error: ${error.message}\nVerifica que el servidor Python esté corriendo.`);
-            } finally {
-                spinner.style.display = 'none';
-                exportButton.disabled = false;
-                exportButton.style.opacity = '1';
-                
-                setTimeout(() => {
-                    exportButton.innerHTML = originalText;
-                }, 3000);
-            }
-        });
-    });
-</script>
-<!-- Después de tu script actual -->
 <script src="js/esmalte-menu.js"></script>
+
 </body>
 </html>
