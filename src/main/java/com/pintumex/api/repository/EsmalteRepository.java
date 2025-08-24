@@ -8,4 +8,6 @@ import java.util.Optional;
 
 public interface EsmalteRepository extends JpaRepository<Esmalte, String> {
     Optional<Esmalte> findByCodigo(String codigo);
+
+    
 }

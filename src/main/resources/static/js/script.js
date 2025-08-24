@@ -75,6 +75,7 @@ const galonesInput = document.getElementById('galones');
 const cubetasInput = document.getElementById('cubetas');
 const tabla = document.getElementById("tablaRondas");
 
+
 // Controles de Modo
 const modeVinilica = document.getElementById('modeVinilica');
 const modeEsmalte = document.getElementById('modeEsmalte');
@@ -292,6 +293,11 @@ async function renderizarTabla() {
                 card.dataset.maquina = maquina;
                 card.dataset.ronda = ronda;
                 card.setAttribute('draggable', 'true');
+                 card.dataset.cubetas = c.cubetas || 0;
+    card.dataset.galones = c.galones || 0;
+    card.dataset.litrosEnvase = c.litros_envase || 0; // Utiliza 'litros_envase' para que coincida con tu objeto
+    card.dataset.medios = c.medios || 0;
+      card.dataset.numeroBase = c.numero_base || '';
 
                 let distributionDetailsHtml = '';
                 let detailsArray = [];

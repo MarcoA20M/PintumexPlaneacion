@@ -41,6 +41,11 @@ public class CargaController {
         return asignacionCargaService.asignarCargas(cargas, rondas);
     }
 
+ @PostMapping
+    public Carga saveCarga(@RequestBody Carga carga) {
+        return cargaRepository.save(carga);
+    }
+
     @PostMapping("/guardar-sesion")
     public List<Carga> guardarSesion(@RequestBody List<Carga> cargas) {
         cargaRepository.deleteAll();
