@@ -69,7 +69,7 @@ h2 {
     border: 1px solid var(--border-color);
     border-radius: 8px;
     background-color: var(--text-color-light);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 10px rgba(91, 59, 59, 0.05);
 }
 
 /* --- Formulario --- */
@@ -1069,3 +1069,66 @@ table#tablaDistribucion tbody tr:nth-child(even) {
     color: #3c763d; /* Texto verde oscuro */
     display: none; /* Oculta el mensaje por defecto */
 }
+
+
+
+        /* Estilos para el Historial */
+        .historial-section {
+            padding: 20px;
+            margin-top: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .date-selector {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .date-selector label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .date-selector input[type="date"] {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-family: inherit;
+        }
+
+        .historial-table-container {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        #historialTable {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        #historialTable th,
+        #historialTable td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+        }
+
+        #historialTable th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+        }
+
+        .no-data-message, .loading-message {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #777;
+        }

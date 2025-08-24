@@ -1,1 +1,418 @@
-git
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Carga de Pintura</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            display: none;
+        }
+
+        .button-success {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .button-success:hover {
+            background-color: #218838;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            color: white;
+            display: none;
+            z-index: 1000;
+        }
+
+        .notification.success {
+            background-color: #28a745;
+        }
+
+        .notification.error {
+            background-color: #dc3545;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="main-content-grid">
+        <div class="form-section card">
+            <div class="header-controls">
+                <h2>Crear Carga</h2>
+                <div class="mode-selector">
+                    <button id="modeVinilica" class="active">Pintura Vinílica</button>
+                    <button id="modeEsmalte">Pintura de Esmalte</button>
+                </div>
+            </div>
+
+            <form id="formCarga">
+                <div class="input-group">
+                    <label for="codigo">Código de Pintura</label>
+                    <input type="text" id="codigo" required />
+                </div>
+
+                <fieldset>
+                    <legend>Distribución</legend>
+                    <div class="distribution-inputs">
+                        <div class="input-group">
+                            <label for="medios">Medios (0.5 L)</label>
+                            <input type="number" id="medios" min="0" value="0" />
+                        </div>
+                        <div class="input-group">
+                            <label for="litros">Litros (1 L)</label>
+                            <input type="number" id="litros" min="0" value="0" />
+                        </div>
+                        <div class="input-group">
+                            <label for="galones">Galones (4 L)</label>
+                            <input type="number" id="galones" min="0" value="0" />
+                        </div>
+                        <div class="input-group">
+                            <label for="cubetas">Cubetas (19 L)</label>
+                            <input type="number" id="cubetas" min="0" value="0" />
+                        </div>
+                    </div>
+                    <p class="total-litros">Total de litros: <span id="totalDistribucion">0</span> L</p>
+                </fieldset>
+
+                <div class="form-buttons">
+                    <button type="submit" class="button-primary">Agregar Carga</button>
+                    <button type="button" id="verCargas" class="button-secondary">Lista de Cargas</button>
+                    <button type="button" id="btnRecomendar" class="button-secondary">Recomendar Programación</button>
+                    <button type="button" id="guardarEnBD" class="button-success">
+                        <i class="fas fa-database"></i> Guardar en BD
+                    </button>
+                </div>
+                <p id="mensaje"></p>
+            </form>
+        </div>
+
+        <div class="right-column">
+            <div id="infoProducto" class="info-box card" style="display:none;">
+                <h3>Información del Producto</h3>
+                <div class="product-info-line">
+                    <p><strong>Descripción:</strong> <span id="descProducto"></span></p>
+                    <p><strong>Categoría:</strong> <span id="categoriaProducto"></span></p>
+                    <p><strong>Prioridad:</strong> <span id="prioridadProducto"></span></p>
+                </div>
+            </div>
+            
+            <div class="distribution-section card">
+                <h3>Vista previa distribución</h3>
+                <div class="table-container">
+                    <table id="tablaDistribucion">
+                        <thead>
+                            <tr>
+                                <th>Unidad</th>
+                                <th>Cantidad</th>
+                                <th>Litros</th>
+                                <th>Total (L)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Medios</td>
+                                <td id="cantMedios">0</td>
+                                <td>0.5</td>
+                                <td id="litrosMedios">0</td>
+                            </tr>
+                            <tr>
+                                <td>Litros</td>
+                                <td id="cantLitros">0</td>
+                                <td>1</td>
+                                <td id="litrosLitros">0</td>
+                            </tr>
+                            <tr>
+                                <td>Galones</td>
+                                <td id="cantGalones">0</td>
+                                <td>4</td>
+                                <td id="litrosGalones">0</td>
+                            </tr>
+                            <tr>
+                                <td>Cubetas</td>
+                                <td id="cantCubetas">0</td>
+                                <td>19</td>
+                                <td id="litrosCubetas">0</td>
+                            </tr>
+                            <tr class="total-row">
+                                <td colspan="3" style="text-align: right;">Total</td>
+                                <td id="litrosTotalTabla">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="vinilicaMode">
+        <div id="tablaRondas" class="tabla-rondas"></div>
+        <div class="footer-buttons">
+            <button id="exportarWord" class="button-tertiary">Exportar a Word</button>
+            <button id="exportarVinilicas" class="button-tertiary">
+                Exportar reporte de producción
+                <span class="loading-spinner" style="display:none;"></span>
+            </button>
+        </div>
+    </div>
+    
+    <div id="esmalteMode" style="display: none;">
+        <div class="esmalte-content">
+            <h3>Cargas de Esmalte</h3>
+            <div id="esmalte-cards-container"></div>
+        </div>
+    </div>
+
+    <div class="historial-section card">
+        <h3>Historial de Cargas por Día</h3>
+        <div class="date-selector">
+            <label for="fechaCargas">Selecciona una fecha:</label>
+            <input type="date" id="fechaCargas">
+        </div>
+      
+    </div>
+
+</div>
+
+<div id="modalCargas" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Lista de Cargas</h2>
+            <span class="close-button" id="closeModal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="table-container-modal">
+                <table id="cargasTable">
+                    <thead>
+                        <tr>
+                            <th>Folio</th>
+                            <th>Código</th>
+                            <th>Base</th>
+                            <th>Litros</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="btnAsignarRondas" class="button-primary">Asignar Rondas</button>
+        </div>
+    </div>
+</div>
+
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+    </div>
+    <span class="ms-2">Guardando en base de datos...</span>
+</div>
+
+<div id="notification" class="notification"></div>
+
+<script>
+// Funciones auxiliares para notificaciones y carga
+async function guardarEnBaseDeDatos() {
+    try {
+        mostrarLoading(true);
+
+        const cargasVisuales = document.querySelectorAll('.carga-card');
+        const cargasAEnviar = [];
+
+        if (cargasVisuales.length === 0) {
+            mostrarNotificacion('No hay cargas vinílicas para guardar.', 'error');
+            return;
+        }
+
+        cargasVisuales.forEach(carga => {
+            const folio = carga.dataset.folio;
+            const codigoPintura = carga.dataset.codigo;
+            const litrosAsignados = parseFloat(carga.dataset.litros) || 0;
+            const maquinaAsignada = carga.dataset.maquina;
+            const rondaAsignada = parseInt(carga.dataset.ronda) || 1;
+
+            const cantMedios = parseInt(carga.dataset.medios) || 0;
+            const cantLitros = parseInt(carga.dataset.litrosEnvase) || 0;
+            const cantGalones = parseInt(carga.dataset.galones) || 0;
+            const cantCubetas = parseInt(carga.dataset.cubetas) || 0;
+
+            const descProducto = document.getElementById('descProducto')?.textContent || '';
+            const categoriaProducto = document.getElementById('categoriaProducto')?.textContent || '';
+            const prioridadProducto = document.getElementById('prioridadProducto')?.textContent || '';
+
+            cargasAEnviar.push({
+                folio: folio,
+                codigoPintura: codigoPintura,
+                totalLitros: litrosAsignados,
+                fecha: new Date().toISOString(),
+                tipoOrden: 'Producción',
+                categoriaNombre: descProducto,
+                categoriaPrioridad: parseInt(prioridadProducto) || 0,
+                cubetas: cantCubetas,
+                galones: cantGalones,
+                litrosEnvase: cantLitros,
+                medios: cantMedios,
+                tipoPintura: 'vinilica',
+                numeroBase: '',
+                maquinaAsignada: maquinaAsignada,
+                rondaAsignada: rondaAsignada,
+            });
+        });
+
+        console.log("Enviando cargas vinílicas:", cargasAEnviar);
+
+        const response = await fetch('http://localhost:8080/api/cargas/vinilicas', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(cargasAEnviar)
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log("Respuesta del servidor:", result);
+
+        if (result && Array.isArray(result)) {
+            mostrarNotificacion(`¡Éxito! Se guardaron ${result.length} cargas vinílicas`, 'success');
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            throw new Error('Formato de respuesta inesperado.');
+        }
+    } catch (error) {
+        console.error('Error al guardar en BD:', error);
+        mostrarNotificacion('Error: ' + error.message, 'error');
+    } finally {
+        mostrarLoading(false);
+    }
+}
+
+function mostrarLoading(mostrar) {
+    document.getElementById('loadingOverlay').style.display = mostrar ? 'flex' : 'none';
+}
+
+function mostrarNotificacion(mensaje, tipo) {
+    const notification = document.getElementById('notification');
+    notification.textContent = mensaje;
+    notification.className = `notification ${tipo}`;
+    notification.style.display = 'block';
+    setTimeout(() => {
+        notification.style.display = 'none';
+    }, 5000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const guardarEnBDBtn = document.getElementById('guardarEnBD');
+    if (guardarEnBDBtn) {
+        guardarEnBDBtn.addEventListener('click', guardarEnBaseDeDatos);
+    }
+
+    // Código para el historial de cargas
+    const fechaInput = document.getElementById('fechaCargas');
+    const historialTableBody = document.getElementById('historialTableBody');
+    const noDataRow = document.getElementById('no-data-row');
+    const loadingRow = document.getElementById('loading-row');
+
+    // Escuchar el cambio en el input de fecha
+    fechaInput.addEventListener('change', (event) => {
+        const fechaSeleccionada = event.target.value;
+        if (fechaSeleccionada) {
+           window.location.href = `historial.html?fecha=${fechaSeleccionada}`;
+        }
+    });
+
+    // Función para cargar los datos de la API
+    async function cargarCargasPorFecha(fecha) {
+        mostrarLoadingTabla(true);
+        historialTableBody.innerHTML = '';
+        noDataRow.style.display = 'none';
+
+        try {
+            const response = await fetch(`http://localhost:8080/api/cargas/fecha?fecha=${fecha}`);
+            if (!response.ok) {
+                if (response.status === 404) {
+                    noDataRow.style.display = 'table-row';
+                    return;
+                }
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
+
+            const cargas = await response.json();
+            
+            if (cargas.length === 0) {
+                noDataRow.style.display = 'table-row';
+            } else {
+                renderizarTabla(cargas);
+            }
+
+        } catch (error) {
+            console.error('Error al cargar las cargas:', error);
+            const errorRow = document.createElement('tr');
+            errorRow.innerHTML = `<td colspan="7" style="text-align: center; color: red;">Error al cargar datos.</td>`;
+            historialTableBody.appendChild(errorRow);
+        } finally {
+            mostrarLoadingTabla(false);
+        }
+    }
+
+    function renderizarTabla(cargas) {
+        cargas.forEach(carga => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${carga.folio || 'N/A'}</td>
+                <td>${carga.codigoPintura || 'N/A'}</td>
+                <td>${carga.tipoPintura || 'N/A'}</td>
+                <td>${(carga.totalLitros || 0).toFixed(2)}</td>
+                <td>${carga.maquinaAsignada || 'N/A'}</td>
+                <td>${carga.rondaAsignada || 'N/A'}</td>
+                <td>${carga.numeroBase || 'N/A'}</td>
+            `;
+            historialTableBody.appendChild(row);
+        });
+    }
+
+    function mostrarLoadingTabla(mostrar) {
+        loadingRow.style.display = mostrar ? 'table-row' : 'none';
+        historialTableBody.style.opacity = mostrar ? 0.5 : 1;
+    }
+});
+</script>
+
+<script src="js/script.js"></script>
+<script src="js/esmalte-menu.js"></script>
+</body>
+</html>
