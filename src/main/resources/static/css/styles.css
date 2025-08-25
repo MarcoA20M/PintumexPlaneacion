@@ -1132,3 +1132,72 @@ table#tablaDistribucion tbody tr:nth-child(even) {
             font-style: italic;
             color: #777;
         }
+
+
+        /* Estilos para el modal de vinílicas */
+.modal-vinilica {
+    max-width: 600px;
+}
+
+.vinilica-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.detail-row {
+    display: flex;
+    border-bottom: 1px solid #eee;
+    padding: 8px 0;
+}
+
+.detail-label {
+    font-weight: 600;
+    min-width: 120px;
+    color: #555;
+}
+
+.detail-value {
+    flex: 1;
+}
+
+.button-danger {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.button-danger:hover {
+    background-color: #c82333;
+}
+
+/* Estilo para las cards clickeables */
+.carga-card {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.carga-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.maquina {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  /* Otros estilos de la máquina */
+}
+
+.nombre-operarios {
+  font-size: 0.8em;
+  color: #555;
+  margin-top: 5px;
+}

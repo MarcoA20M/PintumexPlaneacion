@@ -109,6 +109,14 @@
                     <button type="button" id="guardarEnBD" class="button-success">
                         <i class="fas fa-database"></i> Guardar en BD
                     </button>
+                     <div class="historial-section card">
+        <h3>Historial de Cargas por Día</h3>
+        <div class="date-selector">
+            <label for="fechaCargas">Selecciona una fecha:</label>
+            <input type="date" id="fechaCargas">
+        </div>
+      
+    </div>
                 </div>
                 <p id="mensaje"></p>
             </form>
@@ -190,14 +198,7 @@
         </div>
     </div>
 
-    <div class="historial-section card">
-        <h3>Historial de Cargas por Día</h3>
-        <div class="date-selector">
-            <label for="fechaCargas">Selecciona una fecha:</label>
-            <input type="date" id="fechaCargas">
-        </div>
-      
-    </div>
+    
 
 </div>
 
@@ -238,6 +239,65 @@
 </div>
 
 <div id="notification" class="notification"></div>
+
+
+<!-- Modal para visualizar información de vinílicas -->
+<div id="modalVinilica" class="modal">
+    <div class="modal-content modal-vinilica">
+        <div class="modal-header">
+            <h2>Detalles de la Carga de Vinílica</h2>
+              <span class="close-button" id="closeModalCargas">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="vinilica-details">
+                <div class="detail-row">
+                    <div class="detail-label">Folio:</div>
+                    <div class="detail-value" id="modalFolio"></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Código:</div>
+                    <div class="detail-value" id="modalCodigo"></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Descripción:</div>
+                    <div class="detail-value" id="modalDescripcion"></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Base:</div>
+                    <div class="detail-value" id="modalBase"></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Categoría:</div>
+                    <div class="detail-value" id="modalCategoria"></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Prioridad:</div>
+                    <div class="detail-value" id="modalPrioridad"></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Máquina:</div>
+                    <div class="detail-value" id="modalMaquina"></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Ronda:</div>
+                    <div class="detail-value" id="modalRonda"></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Total de Litros:</div>
+                    <div class="detail-value" id="modalLitros"></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Distribución:</div>
+                    <div class="detail-value" id="modalDistribucion"></div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="btnEditarCarga" class="button-secondary">Editar</button>
+            <button id="btnEliminarCarga" class="button-danger">Eliminar</button>
+        </div>
+    </div>
+</div>
 
 <script>
 // Funciones auxiliares para notificaciones y carga
@@ -414,5 +474,63 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script src="js/script.js"></script>
 <script src="js/esmalte-menu.js"></script>
+
+
+  <!-- Lógica para cerrar modales -->
+    <script>
+    // ====== LÓGICA SOLO PARA CERRAR MODALES ======
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cerrar modal de cargas (Lista de Cargas)
+        const closeModalCargas = document.getElementById('closeModal');
+        if (closeModalCargas) {
+            closeModalCargas.addEventListener('click', function() {
+                document.getElementById('modalCargas').style.display = 'none';
+            });
+        }
+        
+        // Cerrar modal de vinílicas (Detalles de Vinílicas)
+        const closeModalVinilica = document.getElementById('closeModalCargas');
+        if (closeModalVinilica) {
+            closeModalVinilica.addEventListener('click', function() {
+                document.getElementById('modalVinilica').style.display = 'none';
+            });
+        }
+        
+        // Cerrar modales al hacer clic fuera del contenido
+        const modalCargas = document.getElementById('modalCargas');
+        if (modalCargas) {
+            modalCargas.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                }
+            });
+        }
+        
+        const modalVinilica = document.getElementById('modalVinilica');
+        if (modalVinilica) {
+            modalVinilica.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                }
+            });
+        }
+        
+        // Cerrar con la tecla Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modalCargas = document.getElementById('modalCargas');
+                const modalVinilica = document.getElementById('modalVinilica');
+                
+                if (modalCargas && modalCargas.style.display === 'flex') {
+                    modalCargas.style.display = 'none';
+                }
+                
+                if (modalVinilica && modalVinilica.style.display === 'flex') {
+                    modalVinilica.style.display = 'none';
+                }
+            }
+        });
+    });
+    </script>
 </body>
 </html>

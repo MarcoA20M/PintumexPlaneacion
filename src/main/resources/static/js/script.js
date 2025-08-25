@@ -242,6 +242,7 @@ async function renderizarTabla() {
     tabla.innerHTML = '';
     const encabezados = ['Máquina', 'Ronda 1', 'Ronda 2', 'Ronda 3', 'Ronda 4'];
 
+    // Renderizar encabezados
     encabezados.forEach(encabezado => {
         const div = document.createElement('div');
         div.className = 'encabezado';
@@ -253,27 +254,34 @@ async function renderizarTabla() {
         const maquinaDiv = document.createElement('div');
         maquinaDiv.className = 'maquina';
 
+        // Obtener semana y año
         const hoy = new Date();
-        const [año, semana] = getWeekNumber(hoy);
+        const [anio, semana] = getWeekNumber(hoy);
 
         try {
-            const response = await fetch(`/api/rotacion/personal?maquina=${maquina}&semana=${semana}&año=${año}`);
+            // Llamada al backend con parámetros codificados
+            const response = await fetch(`/api/rotacion/personal?maquina=${encodeURIComponent(maquina)}&semana=${semana}&anio=${anio}`);
+
             if (response.ok) {
                 const operarios = await response.json();
+                console.log("Operarios recibidos para", maquina, ":", operarios);
+
                 maquinaDiv.innerHTML = `
-                    ${maquina}
+                    <div class="maquina-nombre">${maquina}</div>
                     <div class="nombre-operarios">${operarios.join(', ')}</div>
                 `;
             } else {
                 maquinaDiv.textContent = maquina;
+                console.error("Error al obtener operarios:", response.status, response.statusText);
             }
         } catch (error) {
-            console.error('Error getting operators:', error);
+            console.error('Error obteniendo operarios:', error);
             maquinaDiv.textContent = maquina;
         }
 
         tabla.appendChild(maquinaDiv);
 
+        // Renderizar rondas y cargas
         for (let ronda = 1; ronda <= rondasTotales; ronda++) {
             const rondaDiv = document.createElement('div');
             rondaDiv.className = 'dropzone';
@@ -293,29 +301,19 @@ async function renderizarTabla() {
                 card.dataset.maquina = maquina;
                 card.dataset.ronda = ronda;
                 card.setAttribute('draggable', 'true');
-                 card.dataset.cubetas = c.cubetas || 0;
-    card.dataset.galones = c.galones || 0;
-    card.dataset.litrosEnvase = c.litros_envase || 0; // Utiliza 'litros_envase' para que coincida con tu objeto
-    card.dataset.medios = c.medios || 0;
-      card.dataset.numeroBase = c.numero_base || '';
+                card.dataset.cubetas = c.cubetas || 0;
+                card.dataset.galones = c.galones || 0;
+                card.dataset.litrosEnvase = c.litros_envase || 0;
+                card.dataset.medios = c.medios || 0;
+                card.dataset.numeroBase = c.numero_base || '';
 
-                let distributionDetailsHtml = '';
+                // Distribución litros
                 let detailsArray = [];
-
-                if (c.cubetas > 0) {
-                    detailsArray.push(`19 - ${c.cubetas}`);
-                }
-                if (c.galones > 0) {
-                    detailsArray.push(`4 - ${c.galones}`);
-                }
-                if (c.litros_envase > 0) {
-                    detailsArray.push(`1 - ${c.litros_envase}`);
-                }
-                if (c.medios > 0) {
-                    detailsArray.push(`0.5 - ${c.medios}`);
-                }
-
-                distributionDetailsHtml = detailsArray.join(', ');
+                if (c.cubetas > 0) detailsArray.push(`19 - ${c.cubetas}`);
+                if (c.galones > 0) detailsArray.push(`4 - ${c.galones}`);
+                if (c.litros_envase > 0) detailsArray.push(`1 - ${c.litros_envase}`);
+                if (c.medios > 0) detailsArray.push(`0.5 - ${c.medios}`);
+                const distributionDetailsHtml = detailsArray.join(', ');
 
                 card.innerHTML = `
                     <div class="header-content">
@@ -329,17 +327,29 @@ async function renderizarTabla() {
                         <small>Base: ${c.numero_base}</small>
                     </div>
                 `;
+
+                // Abrir modal al hacer clic
+                card.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    abrirModalVinilica(card);
+                });
+
                 rondaDiv.appendChild(card);
             });
+
             tabla.appendChild(rondaDiv);
         }
     }
+
+    // Inicializar drag & drop si existe
     if (typeof habilitarDragAndDrop === 'function') {
         habilitarDragAndDrop();
     } else {
-        console.warn("The function 'habilitarDragAndDrop' is not defined. If you need drag and drop functionality, please define it.");
+        console.warn("La función 'habilitarDragAndDrop' no está definida.");
     }
 }
+
+
 
 // ... (código anterior sin cambios)
 
@@ -1166,3 +1176,131 @@ form.addEventListener('submit', (event) => {
 
     // Tu código para procesar la carga va aquí...
 });
+
+
+// ====== Funcionalidad para el Modal de Vinílicas ======
+
+// ====== FUNCIONALIDAD PARA EL MODAL DE VINÍLICAS ======
+
+// Función para abrir el modal con la información de la carga
+function abrirModalVinilica(card) {
+    const modal = document.getElementById('modalVinilica');
+    const cargaData = obtenerDatosCargaDesdeCard(card);
+    
+    // Llenar el modal con los datos
+    document.getElementById('modalFolio').textContent = cargaData.folio || 'N/A';
+    document.getElementById('modalCodigo').textContent = cargaData.codigo || 'N/A';
+    document.getElementById('modalBase').textContent = cargaData.numeroBase || 'N/A';
+    document.getElementById('modalCategoria').textContent = cargaData.categoria || 'N/A';
+    document.getElementById('modalPrioridad').textContent = cargaData.prioridad || 'N/A';
+    document.getElementById('modalMaquina').textContent = cargaData.maquina || 'N/A';
+    document.getElementById('modalRonda').textContent = cargaData.ronda || 'N/A';
+    document.getElementById('modalLitros').textContent = `${cargaData.litros || 0} L`;
+    document.getElementById('modalDistribucion').textContent = generarTextoDistribucion(cargaData);
+    
+    // Obtener y mostrar la descripción del producto
+    obtenerDescripcionProducto(cargaData.codigo).then(descripcion => {
+        document.getElementById('modalDescripcion').textContent = descripcion;
+    });
+    
+    // Configurar botones de acción
+    document.getElementById('btnEditarCarga').onclick = () => editarCarga(cargaData);
+    document.getElementById('btnEliminarCarga').onclick = () => eliminarCarga(cargaData);
+    
+    // Mostrar el modal
+    modal.style.display = 'flex';
+}
+
+// Función para obtener datos de la carga desde la card
+function obtenerDatosCargaDesdeCard(card) {
+    return {
+        folio: card.dataset.folio,
+        codigo: card.dataset.codigo,
+        numeroBase: card.dataset.numeroBase,
+        categoria: card.dataset.categoria,
+        prioridad: card.dataset.prioridad,
+        litros: card.dataset.litros,
+        maquina: card.dataset.maquina,
+        ronda: card.dataset.ronda,
+        cubetas: card.dataset.cubetas || 0,
+        galones: card.dataset.galones || 0,
+        litrosEnvase: card.dataset.litrosEnvase || 0,
+        medios: card.dataset.medios || 0
+    };
+}
+
+// Función para obtener la descripción del producto
+async function obtenerDescripcionProducto(codigo) {
+    try {
+        const response = await fetch(`/api/productos/codigo/${encodeURIComponent(codigo)}`);
+        if (response.ok) {
+            const producto = await response.json();
+            return producto.descripcion || 'Descripción no disponible';
+        }
+        return 'Descripción no disponible';
+    } catch (error) {
+        console.error('Error al obtener descripción:', error);
+        return 'Descripción no disponible';
+    }
+}
+
+// Función para generar texto de distribución
+function generarTextoDistribucion(cargaData) {
+    const partes = [];
+    
+    if (cargaData.cubetas > 0) partes.push(`${cargaData.cubetas} cubeta(s) de 19L`);
+    if (cargaData.galones > 0) partes.push(`${cargaData.galones} galón(es) de 4L`);
+    if (cargaData.litrosEnvase > 0) partes.push(`${cargaData.litrosEnvase} litro(s)`);
+    if (cargaData.medios > 0) partes.push(`${cargaData.medios} medio(s) de 0.5L`);
+    
+    return partes.length > 0 ? partes.join(', ') : 'Sin distribución específica';
+}
+
+// Función para editar carga (placeholder)
+function editarCarga(cargaData) {
+    console.log('Editar carga:', cargaData);
+    alert(`Función de edición para ${cargaData.folio} será implementada pronto.`);
+}
+
+// Función para eliminar carga
+function eliminarCarga(cargaData) {
+    if (confirm(`¿Estás seguro de que quieres eliminar la carga ${cargaData.folio}?`)) {
+        // Eliminar de la interfaz
+        const card = document.querySelector(`.carga-card[data-folio="${cargaData.folio}"]`);
+        if (card) {
+            card.remove();
+        }
+        
+        // Eliminar de las estructuras de datos
+        eliminarCargaDeEstructuras(cargaData);
+        
+        // Cerrar el modal
+        document.getElementById('modalVinilica').style.display = 'none';
+        
+        // Mostrar mensaje de éxito
+        mostrarNotificacion(`Carga ${cargaData.folio} eliminada correctamente`, 'success');
+    }
+}
+
+// Función para eliminar carga de las estructuras de datos
+function eliminarCargaDeEstructuras(cargaData) {
+    // Eliminar de mapaMaquinaRondas
+    if (mapaMaquinaRondas[cargaData.maquina] && mapaMaquinaRondas[cargaData.maquina][cargaData.ronda]) {
+        const index = mapaMaquinaRondas[cargaData.maquina][cargaData.ronda].findIndex(
+            c => c.folio === cargaData.folio
+        );
+        if (index > -1) {
+            mapaMaquinaRondas[cargaData.maquina][cargaData.ronda].splice(index, 1);
+        }
+    }
+    
+    // Eliminar de cargasGuardadas
+    const index = cargasGuardadas.findIndex(c => c.folio === cargaData.folio);
+    if (index > -1) {
+        cargasGuardadas.splice(index, 1);
+    }
+    
+    // Guardar estado actualizado
+    guardarEstado();
+}
+

@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "rotacion_personal_maquina",
-       uniqueConstraints = {@UniqueConstraint(columnNames = {"id_personal", "id_maquina", "semana", "año"})})
+       uniqueConstraints = {@UniqueConstraint(columnNames = {"id_personal", "id_maquina", "semana", "anio"})})
 public class RotacionPersonalMaquina {
 
     @Id
@@ -22,8 +22,8 @@ public class RotacionPersonalMaquina {
     @Column(nullable = false)
     private Integer semana;
 
-    @Column(name = "año", nullable = false)
-    private Integer año;
+ @Column(name = "año", nullable = false)
+private Integer anio;
 
     // Getters y setters
     public Integer getId() {
@@ -50,10 +50,10 @@ public class RotacionPersonalMaquina {
     public void setSemana(Integer semana) {
         this.semana = semana;
     }
-    public Integer getAño() {
-        return año;
+    public Integer getAnio() {
+        return anio;
     }
-    public void setAño(Integer año) {
-        this.año = año;
+    public void setAnio(Integer anio) {
+        this.anio = anio;
     }
 }
