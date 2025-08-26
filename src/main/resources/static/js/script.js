@@ -1304,3 +1304,4 @@ function eliminarCargaDeEstructuras(cargaData) {
     guardarEstado();
 }
 
+

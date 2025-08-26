@@ -476,61 +476,104 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="js/esmalte-menu.js"></script>
 
 
-  <!-- Lógica para cerrar modales -->
-    <script>
-    // ====== LÓGICA SOLO PARA CERRAR MODALES ======
-    document.addEventListener('DOMContentLoaded', function() {
-        // Cerrar modal de cargas (Lista de Cargas)
-        const closeModalCargas = document.getElementById('closeModal');
-        if (closeModalCargas) {
-            closeModalCargas.addEventListener('click', function() {
-                document.getElementById('modalCargas').style.display = 'none';
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const codigoInput = document.getElementById('codigo');
+    const mediosInput = document.getElementById('medios');
+    const litrosInput = document.getElementById('litros');
+    const galonesInput = document.getElementById('galones');
+    const cubetasInput = document.getElementById('cubetas');
+
+    const cantMedios = document.getElementById('cantMedios');
+    const cantLitros = document.getElementById('cantLitros');
+    const cantGalones = document.getElementById('cantGalones');
+    const cantCubetas = document.getElementById('cantCubetas');
+
+    const litrosMedios = document.getElementById('litrosMedios');
+    const litrosLitros = document.getElementById('litrosLitros');
+    const litrosGalones = document.getElementById('litrosGalones');
+    const litrosCubetas = document.getElementById('litrosCubetas');
+
+    const totalDistribucionSpan = document.getElementById('totalDistribucion');
+    const totalTabla = document.getElementById('litrosTotalTabla');
+
+    async function actualizarEnvasesDisponibles(codigo) {
+        try {
+            const response = await fetch(`http://localhost:8080/api/productos/envases/${codigo}`);
+            if (!response.ok) throw new Error('Error al obtener envases');
+
+            const envases = await response.json();
+            // Primero mostramos todos los envases
+            [mediosInput, litrosInput, galonesInput, cubetasInput].forEach(i => {
+                i.parentElement.style.display = 'block';
+                i.value = 0;
             });
-        }
-        
-        // Cerrar modal de vinílicas (Detalles de Vinílicas)
-        const closeModalVinilica = document.getElementById('closeModalCargas');
-        if (closeModalVinilica) {
-            closeModalVinilica.addEventListener('click', function() {
-                document.getElementById('modalVinilica').style.display = 'none';
-            });
-        }
-        
-        // Cerrar modales al hacer clic fuera del contenido
-        const modalCargas = document.getElementById('modalCargas');
-        if (modalCargas) {
-            modalCargas.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.style.display = 'none';
-                }
-            });
-        }
-        
-        const modalVinilica = document.getElementById('modalVinilica');
-        if (modalVinilica) {
-            modalVinilica.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.style.display = 'none';
-                }
-            });
-        }
-        
-        // Cerrar con la tecla Escape
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                const modalCargas = document.getElementById('modalCargas');
-                const modalVinilica = document.getElementById('modalVinilica');
-                
-                if (modalCargas && modalCargas.style.display === 'flex') {
-                    modalCargas.style.display = 'none';
-                }
-                
-                if (modalVinilica && modalVinilica.style.display === 'flex') {
-                    modalVinilica.style.display = 'none';
-                }
+
+            console.log('Envases recibidos de la API:', envases);
+
+            // Ocultar los envases que NO vienen en la respuesta
+            const disponibles = envases.map(e => parseFloat(e.envase?.capacidad ?? e.capacidad));
+            if (!disponibles.includes(0.5)) mediosInput.parentElement.style.display = 'none';
+            if (!disponibles.includes(1)) litrosInput.parentElement.style.display = 'none';
+            if (!disponibles.includes(4)) galonesInput.parentElement.style.display = 'none';
+            if (!disponibles.includes(19)) cubetasInput.parentElement.style.display = 'none';
+
+            if (disponibles.length === 0) {
+                mostrarNotificacion('No hay envases disponibles para este código', 'error');
             }
-        });
+
+        } catch (error) {
+            console.error('Error al obtener envases:', error);
+            [mediosInput, litrosInput, galonesInput, cubetasInput].forEach(i => {
+                i.parentElement.style.display = 'none';
+            });
+            mostrarNotificacion('Error al cargar envases', 'error');
+        }
+    }
+
+    function actualizarVistaDistribucion() {
+        const m = parseInt(mediosInput.value) || 0;
+        const l = parseInt(litrosInput.value) || 0;
+        const g = parseInt(galonesInput.value) || 0;
+        const c = parseInt(cubetasInput.value) || 0;
+
+        cantMedios.textContent = m;
+        cantLitros.textContent = l;
+        cantGalones.textContent = g;
+        cantCubetas.textContent = c;
+
+        litrosMedios.textContent = (m * 0.5).toFixed(2);
+        litrosLitros.textContent = (l * 1).toFixed(2);
+        litrosGalones.textContent = (g * 4).toFixed(2);
+        litrosCubetas.textContent = (c * 19).toFixed(2);
+
+        const total = m*0.5 + l*1 + g*4 + c*19;
+        totalDistribucionSpan.textContent = total.toFixed(2);
+        totalTabla.textContent = total.toFixed(2);
+    }
+
+    [mediosInput, litrosInput, galonesInput, cubetasInput].forEach(input => {
+        input.addEventListener('input', actualizarVistaDistribucion);
     });
-    </script>
+
+    // Solo actualiza envases cuando salgas del campo de código
+    codigoInput.addEventListener('blur', () => {
+        const codigo = codigoInput.value.trim();
+        if (codigo) {
+            actualizarEnvasesDisponibles(codigo);
+        } else {
+            // Restaurar todos los envases si el campo está vacío
+            [mediosInput, litrosInput, galonesInput, cubetasInput].forEach(i => {
+                i.parentElement.style.display = 'block';
+                i.value = 0;
+            });
+            actualizarVistaDistribucion();
+        }
+    });
+
+    actualizarVistaDistribucion();
+});
+</script>
+
 </body>
 </html>
