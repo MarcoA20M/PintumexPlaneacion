@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         .loading-overlay {
             position: fixed;
@@ -57,7 +58,180 @@
         .notification.error {
             background-color: #dc3545;
         }
+        
+        /* --- ESTILOS PARA LAS TABLAS DE RECOMENDACIÓN --- */
+        .recommendation-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            color: #333;
+        }
+        .recommendation-table th, .recommendation-table td {
+            border: 1px solid #e0e0e0;
+            padding: 12px 15px;
+            text-align: left;
+        }
+        .recommendation-table th {
+            background-color: #f8f8f8;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+        .recommendation-table tbody tr:nth-child(even) {
+            background-color: #fcfcfc;
+        }
+        .recommendation-table tbody tr:hover {
+            background-color: #f0f8ff;
+        }
+        .loading-message, .error-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-weight: 500;
+            text-align: center;
+        }
+        .loading-message {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            border: 1px solid #90caf9;
+        }
+        .error-message {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+        h3, h4 {
+            color: #333;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        h4.alert-icon {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h4.alert-icon i {
+            font-size: 1.2em;
+        }
 
+        /* --- Estilos para el nuevo Modal de Recomendaciones --- */
+        .modal {
+            display: none; /* Oculto por defecto */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* Fondo oscuro transparente */
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto; /* Para permitir el scroll si el contenido es largo */
+        }
+        
+        .modal-content.modal-recommendation {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 900px; /* Ancho máximo para el modal */
+            transform: translateY(20px);
+            transition: transform 0.3s ease-out;
+        }
+        
+        /* Animación de entrada para el modal */
+        .modal.show {
+            display: flex;
+        }
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: #333;
+        }
+        
+        .close-button {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .close-button:hover,
+        .close-button:focus {
+            color: #333;
+        }
+        
+        .modal-body {
+            max-height: 70vh; /* Altura máxima para el cuerpo del modal */
+            overflow-y: auto; /* Scroll si el contenido excede la altura */
+        }
+        
+        .recommendation-table {
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 25px;
+            background-color: #fcfcfc;
+        }
+        .recommendation-table th {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+        .recommendation-table td {
+            background-color: #ffffff;
+        }
+        .recommendation-table tbody tr:hover {
+            background-color: #eef7ff;
+        }
+        
+        .loading-message, .error-message {
+            padding: 20px;
+            font-size: 1.1em;
+        }
+        
+        .alert-icon {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.4rem;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        
+        .alert-icon i {
+            font-size: 1.5rem;
+        }
+        
+        h4.alert-icon.attention i { color: #dc3545; }
+        h4.alert-icon.warning i { color: #ffc107; }
+        h4.alert-icon.inventory i { color: #17a2b8; }
     </style>
 </head>
 <body>
@@ -106,17 +280,17 @@
                     <button type="submit" class="button-primary">Agregar Carga</button>
                     <button type="button" id="verCargas" class="button-secondary">Lista de Cargas</button>
                     <button type="button" id="btnRecomendar" class="button-secondary">Recomendar Programación</button>
+                    <input type="file" id="excelFile" accept=".xlsx, .xls" style="display:none;" />
                     <button type="button" id="guardarEnBD" class="button-success">
                         <i class="fas fa-database"></i> Guardar en BD
                     </button>
-                     <div class="historial-section card">
-        <h3>Historial de Cargas por Día</h3>
-        <div class="date-selector">
-            <label for="fechaCargas">Selecciona una fecha:</label>
-            <input type="date" id="fechaCargas">
-        </div>
-      
-    </div>
+                    <div class="historial-section card">
+                        <h3>Historial de Cargas por Día</h3>
+                        <div class="date-selector">
+                            <label for="fechaCargas">Selecciona una fecha:</label>
+                            <input type="date" id="fechaCargas">
+                        </div>
+                    </div>
                 </div>
                 <p id="mensaje"></p>
             </form>
@@ -181,7 +355,7 @@
     </div>
     
     <div id="vinilicaMode">
-        <div id="tablaRondas" class="tabla-rondas"></div>
+        <div id="tablaRondas" class="tabla-rondas card"></div>
         <div class="footer-buttons">
             <button id="exportarWord" class="button-tertiary">Exportar a Word</button>
             <button id="exportarVinilicas" class="button-tertiary">
@@ -197,8 +371,6 @@
             <div id="esmalte-cards-container"></div>
         </div>
     </div>
-
-    
 
 </div>
 
@@ -240,13 +412,11 @@
 
 <div id="notification" class="notification"></div>
 
-
-<!-- Modal para visualizar información de vinílicas -->
 <div id="modalVinilica" class="modal">
     <div class="modal-content modal-vinilica">
         <div class="modal-header">
             <h2>Detalles de la Carga de Vinílica</h2>
-              <span class="close-button" id="closeModalCargas">&times;</span>
+            <span class="close-button" id="closeModalCargas">&times;</span>
         </div>
         <div class="modal-body">
             <div class="vinilica-details">
@@ -299,281 +469,313 @@
     </div>
 </div>
 
+<div id="modalRecomendaciones" class="modal">
+    <div class="modal-content modal-recommendation">
+        <div class="modal-header">
+            <h2>Recomendación de Producción</h2>
+            <span class="close-button" id="closeModalRecomendaciones">&times;</span>
+        </div>
+        <div class="modal-body" id="modalBodyRecomendaciones">
+            </div>
+    </div>
+</div>
 <script>
-// Funciones auxiliares para notificaciones y carga
-async function guardarEnBaseDeDatos() {
-    try {
-        mostrarLoading(true);
+    // --- Funciones auxiliares para notificaciones y carga (si las tienes en este archivo) ---
+    async function guardarEnBaseDeDatos() { 
+        try {
+            mostrarLoading(true);
+            const cargasVisuales = document.querySelectorAll('.carga-card');
+            const cargasAEnviar = [];
+            if (cargasVisuales.length === 0) {
+                mostrarNotificacion('No hay cargas vinílicas para guardar.', 'error');
+                return;
+            }
+            cargasVisuales.forEach(carga => {
+                const folio = carga.dataset.folio;
+                const codigoPintura = carga.dataset.codigo;
+                const litrosAsignados = parseFloat(carga.dataset.litros) || 0;
+                const maquinaAsignada = carga.dataset.maquina;
+                const rondaAsignada = parseInt(carga.dataset.ronda) || 1;
+                const cantMedios = parseInt(carga.dataset.medios) || 0;
+                const cantLitros = parseInt(carga.dataset.litrosEnvase) || 0;
+                const cantGalones = parseInt(carga.dataset.galones) || 0;
+                const cantCubetas = parseInt(carga.dataset.cubetas) || 0;
+                const descProducto = document.getElementById('descProducto')?.textContent || '';
+                const categoriaProducto = document.getElementById('categoriaProducto')?.textContent || '';
+                const prioridadProducto = document.getElementById('prioridadProducto')?.textContent || '';
+                cargasAEnviar.push({
+                    folio: folio,
+                    codigoPintura: codigoPintura,
+                    totalLitros: litrosAsignados,
+                    fecha: new Date().toISOString(),
+                    tipoOrden: 'Producción',
+                    categoriaNombre: descProducto,
+                    categoriaPrioridad: parseInt(prioridadProducto) || 0,
+                    cubetas: cantCubetas,
+                    galones: cantGalones,
+                    litrosEnvase: cantLitros,
+                    medios: cantMedios,
+                    tipoPintura: 'vinilica',
+                    numeroBase: '',
+                    maquinaAsignada: maquinaAsignada,
+                    rondaAsignada: rondaAsignada,
+                });
+            });
+            console.log("Enviando cargas vinílicas:", cargasAEnviar);
+            const response = await fetch('http://localhost:8080/api/cargas/vinilicas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(cargasAEnviar)
+            });
+            if (!response.ok) { throw new Error(`Error HTTP: ${response.status}`); }
+            const result = await response.json();
+            console.log("Respuesta del servidor:", result);
+            if (result && Array.isArray(result)) {
+                mostrarNotificacion(`¡Éxito! Se guardaron ${result.length} cargas vinílicas`, 'success');
+                setTimeout(() => { location.reload(); }, 2000);
+            } else { throw new Error('Formato de respuesta inesperado.'); }
+        } catch (error) {
+            console.error('Error al guardar en BD:', error);
+            mostrarNotificacion('Error: ' + error.message, 'error');
+        } finally {
+            mostrarLoading(false);
+        }
+    }
+    function mostrarLoading(mostrar) { document.getElementById('loadingOverlay').style.display = mostrar ? 'flex' : 'none'; }
+    function mostrarNotificacion(mensaje, tipo) {
+        const notification = document.getElementById('notification');
+        notification.textContent = mensaje;
+        notification.className = `notification ${tipo}`;
+        notification.style.display = 'block';
+        setTimeout(() => { notification.style.display = 'none'; }, 5000);
+    }
 
-        const cargasVisuales = document.querySelectorAll('.carga-card');
-        const cargasAEnviar = [];
+    document.addEventListener('DOMContentLoaded', function() {
+        const guardarEnBDBtn = document.getElementById('guardarEnBD');
+        if (guardarEnBDBtn) {
+            guardarEnBDBtn.addEventListener('click', guardarEnBaseDeDatos);
+        }
+        const fechaInput = document.getElementById('fechaCargas');
+        if (fechaInput) { 
+            fechaInput.addEventListener('change', (event) => {
+                const fechaSeleccionada = event.target.value;
+                if (fechaSeleccionada) { window.location.href = `historial.html?fecha=${fechaSeleccionada}`; }
+            });
+        }
+    });
 
-        if (cargasVisuales.length === 0) {
-            mostrarNotificacion('No hay cargas vinílicas para guardar.', 'error');
+    // --- Script para la lógica del formulario de carga y distribución de envases ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const codigoInput = document.getElementById('codigo');
+        const mediosInput = document.getElementById('medios');
+        const litrosInput = document.getElementById('litros');
+        const galonesInput = document.getElementById('galones');
+        const cubetasInput = document.getElementById('cubetas');
+        const cantMedios = document.getElementById('cantMedios');
+        const cantLitros = document.getElementById('cantLitros');
+        const cantGalones = document.getElementById('cantGalones');
+        const cantCubetas = document.getElementById('cantCubetas');
+        const litrosMedios = document.getElementById('litrosMedios');
+        const litrosLitros = document.getElementById('litrosLitros');
+        const litrosGalones = document.getElementById('litrosGalones');
+        const litrosCubetas = document.getElementById('litrosCubetas');
+        const totalDistribucionSpan = document.getElementById('totalDistribucion');
+        const totalTabla = document.getElementById('litrosTotalTabla');
+
+        async function actualizarEnvasesDisponibles(codigo) {
+            try {
+                const response = await fetch(`http://localhost:8080/api/productos/envases/${codigo}`);
+                if (!response.ok) throw new Error('Error al obtener envases');
+                const envases = await response.json();
+                [mediosInput, litrosInput, galonesInput, cubetasInput].forEach(i => {
+                    i.parentElement.style.display = 'block';
+                    i.value = 0;
+                });
+                console.log('Envases recibidos de la API:', envases);
+                const disponibles = envases.map(e => parseFloat(e.envase?.capacidad ?? e.capacidad));
+                if (!disponibles.includes(0.5)) mediosInput.parentElement.style.display = 'none';
+                if (!disponibles.includes(1)) litrosInput.parentElement.style.display = 'none';
+                if (!disponibles.includes(4)) galonesInput.parentElement.style.display = 'none';
+                if (!disponibles.includes(19)) cubetasInput.parentElement.style.display = 'none';
+                if (disponibles.length === 0) {
+                    mostrarNotificacion('No hay envases disponibles para este código', 'error');
+                }
+            } catch (error) {
+                console.error('Error al obtener envases:', error);
+                [mediosInput, litrosInput, galonesInput, cubetasInput].forEach(i => {
+                    i.parentElement.style.display = 'none';
+                });
+                mostrarNotificacion('Error al cargar envases', 'error');
+            }
+        }
+        function actualizarVistaDistribucion() {
+            const m = parseInt(mediosInput.value) || 0;
+            const l = parseInt(litrosInput.value) || 0;
+            const g = parseInt(galonesInput.value) || 0;
+            const c = parseInt(cubetasInput.value) || 0;
+            cantMedios.textContent = m;
+            cantLitros.textContent = l;
+            cantGalones.textContent = g;
+            cantCubetas.textContent = c;
+            litrosMedios.textContent = (m * 0.5).toFixed(2);
+            litrosLitros.textContent = (l * 1).toFixed(2);
+            litrosGalones.textContent = (g * 4).toFixed(2);
+            litrosCubetas.textContent = (c * 19).toFixed(2);
+            const total = m*0.5 + l*1 + g*4 + c*19;
+            totalDistribucionSpan.textContent = total.toFixed(2);
+            totalTabla.textContent = total.toFixed(2);
+        }
+        [mediosInput, litrosInput, galonesInput, cubetasInput].forEach(input => {
+            input.addEventListener('input', actualizarVistaDistribucion);
+        });
+        codigoInput.addEventListener('blur', () => {
+            const codigo = codigoInput.value.trim();
+            if (codigo) {
+                actualizarEnvasesDisponibles(codigo);
+            } else {
+                [mediosInput, litrosInput, galonesInput, cubetasInput].forEach(i => {
+                    i.parentElement.style.display = 'block';
+                    i.value = 0;
+                });
+                actualizarVistaDistribucion();
+            }
+        });
+        actualizarVistaDistribucion();
+    });
+
+    // --- SCRIPT PRINCIPAL PARA LA FUNCIONALIDAD DE RECOMENDACIÓN DE EXCEL ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const btnRecomendar = document.getElementById('btnRecomendar');
+        const excelFileInput = document.getElementById('excelFile');
+        const modalRecomendaciones = document.getElementById('modalRecomendaciones');
+        const modalBody = document.getElementById('modalBodyRecomendaciones');
+        const closeBtnRecomendaciones = document.getElementById('closeModalRecomendaciones');
+
+        // Maneja la apertura del modal al hacer clic en el botón
+        btnRecomendar.addEventListener('click', () => {
+            excelFileInput.click(); // Activa el clic en el input de archivo oculto
+        });
+
+        // Escucha el evento 'change' del input de archivo
+        excelFileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) {
+                console.log("No se seleccionó ningún archivo.");
+                return; // Si el usuario cierra la ventana, la función termina aquí.
+            }
+
+            // Mostrar el modal y el mensaje de carga
+            modalRecomendaciones.classList.add('show');
+            modalBody.innerHTML = '<p class="loading-message"><i class="fas fa-spinner fa-spin"></i> Procesando el archivo... por favor, espere.</p>';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('http://localhost:5000/recomendar', { 
+                method: 'POST',
+                body: formData,
+            })
+            .then(res => {
+                if (!res.ok) {
+                    return res.json().then(errorData => {
+                        throw new Error(errorData.error || `Error en el servidor: ${res.status}`);
+                    });
+                }
+                return res.json();
+            })
+            .then(data => {
+                mostrarRecomendacionEnModal(data);
+            })
+            .catch(error => {
+                console.error('Error al subir o analizar el archivo:', error);
+                modalBody.innerHTML = `<p class="error-message"><i class="fas fa-exclamation-triangle"></i> Error al procesar el archivo: ${error.message}.</p>`;
+            })
+            .finally(() => {
+                // Reinicia el valor del input de archivo para que el evento 'change' se dispare la próxima vez
+                excelFileInput.value = '';
+            });
+        });
+
+        // Cierra el modal cuando se hace clic en la X
+        closeBtnRecomendaciones.addEventListener('click', () => {
+            modalRecomendaciones.classList.remove('show');
+        });
+
+        // Cierra el modal si se hace clic fuera de él
+        window.addEventListener('click', (event) => {
+            if (event.target === modalRecomendaciones) {
+                modalRecomendaciones.classList.remove('show');
+            }
+        });
+    });
+
+    // --- Función para mostrar las recomendaciones en el nuevo modal ---
+    function mostrarRecomendacionEnModal(data) {
+        const modalBody = document.getElementById('modalBodyRecomendaciones');
+        let htmlContent = '';
+
+        if (data.error) {
+            htmlContent = `<p class="error-message"><i class="fas fa-exclamation-circle"></i> Error: ${data.error}</p>`;
+            modalBody.innerHTML = htmlContent;
             return;
         }
 
-        cargasVisuales.forEach(carga => {
-            const folio = carga.dataset.folio;
-            const codigoPintura = carga.dataset.codigo;
-            const litrosAsignados = parseFloat(carga.dataset.litros) || 0;
-            const maquinaAsignada = carga.dataset.maquina;
-            const rondaAsignada = parseInt(carga.dataset.ronda) || 1;
-
-            const cantMedios = parseInt(carga.dataset.medios) || 0;
-            const cantLitros = parseInt(carga.dataset.litrosEnvase) || 0;
-            const cantGalones = parseInt(carga.dataset.galones) || 0;
-            const cantCubetas = parseInt(carga.dataset.cubetas) || 0;
-
-            const descProducto = document.getElementById('descProducto')?.textContent || '';
-            const categoriaProducto = document.getElementById('categoriaProducto')?.textContent || '';
-            const prioridadProducto = document.getElementById('prioridadProducto')?.textContent || '';
-
-            cargasAEnviar.push({
-                folio: folio,
-                codigoPintura: codigoPintura,
-                totalLitros: litrosAsignados,
-                fecha: new Date().toISOString(),
-                tipoOrden: 'Producción',
-                categoriaNombre: descProducto,
-                categoriaPrioridad: parseInt(prioridadProducto) || 0,
-                cubetas: cantCubetas,
-                galones: cantGalones,
-                litrosEnvase: cantLitros,
-                medios: cantMedios,
-                tipoPintura: 'vinilica',
-                numeroBase: '',
-                maquinaAsignada: maquinaAsignada,
-                rondaAsignada: rondaAsignada,
+        if (data.warnings && data.warnings.length > 0) {
+            data.warnings.forEach(warning => {
+                htmlContent += `<p class="error-message"><i class="fas fa-exclamation-triangle"></i> ${warning}</p>`;
             });
-        });
-
-        console.log("Enviando cargas vinílicas:", cargasAEnviar);
-
-        const response = await fetch('http://localhost:8080/api/cargas/vinilicas', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(cargasAEnviar)
-        });
-
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
         }
 
-        const result = await response.json();
-        console.log("Respuesta del servidor:", result);
+        htmlContent += `<h3>Análisis de Inventario Completado <i class="fas fa-chart-bar"></i></h3>`;
 
-        if (result && Array.isArray(result)) {
-            mostrarNotificacion(`¡Éxito! Se guardaron ${result.length} cargas vinílicas`, 'success');
-            setTimeout(() => {
-                location.reload();
-            }, 2000);
+        // Sugerencias críticas de alta rotación (¡PRIORIDAD MÁXIMA!)
+        if (data.sugerencias_criticas_alta_rotacion && data.sugerencias_criticas_alta_rotacion.length > 0) {
+            htmlContent += '<h4 class="alert-icon attention">🚨 ¡ATENCIÓN! Productos de Alta Rotación Críticos:</h4>';
+            htmlContent += '<p>Estos productos se mueven muy rápido y tienen un alcance de inventario muy bajo. ¡Revisar urgentemente!</p>';
+            htmlContent += '<table class="recommendation-table">';
+            htmlContent += '<thead><tr><th>Producto</th><th>Tipo de Rotación</th><th>Alcances en Día</th></tr></thead><tbody>';
+            data.sugerencias_criticas_alta_rotacion.forEach(item => {
+                htmlContent += `<tr><td>${item.Producto}</td><td>${item['Tipo de Rotacion']}</td><td>${item['Alcances en Dia'] !== undefined ? item['Alcances en Dia'].toFixed(2) : 'N/A'}</td></tr>`;
+            });
+            htmlContent += '</tbody></table>';
         } else {
-            throw new Error('Formato de respuesta inesperado.');
+            htmlContent += '<p>🎉 ¡Buenas noticias! No se encontraron productos de alta rotación con un alcance crítico.</p>';
         }
-    } catch (error) {
-        console.error('Error al guardar en BD:', error);
-        mostrarNotificacion('Error: ' + error.message, 'error');
-    } finally {
-        mostrarLoading(false);
-    }
-}
 
-function mostrarLoading(mostrar) {
-    document.getElementById('loadingOverlay').style.display = mostrar ? 'flex' : 'none';
-}
-
-function mostrarNotificacion(mensaje, tipo) {
-    const notification = document.getElementById('notification');
-    notification.textContent = mensaje;
-    notification.className = `notification ${tipo}`;
-    notification.style.display = 'block';
-    setTimeout(() => {
-        notification.style.display = 'none';
-    }, 5000);
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const guardarEnBDBtn = document.getElementById('guardarEnBD');
-    if (guardarEnBDBtn) {
-        guardarEnBDBtn.addEventListener('click', guardarEnBaseDeDatos);
-    }
-
-    // Código para el historial de cargas
-    const fechaInput = document.getElementById('fechaCargas');
-    const historialTableBody = document.getElementById('historialTableBody');
-    const noDataRow = document.getElementById('no-data-row');
-    const loadingRow = document.getElementById('loading-row');
-
-    // Escuchar el cambio en el input de fecha
-    fechaInput.addEventListener('change', (event) => {
-        const fechaSeleccionada = event.target.value;
-        if (fechaSeleccionada) {
-           window.location.href = `historial.html?fecha=${fechaSeleccionada}`;
+        // Productos críticos generales
+        if (data.productos_criticos && data.productos_criticos.length > 0) {
+            htmlContent += '<h4 class="alert-icon warning">⚠️ Otros Productos Críticos:</h4>';
+            htmlContent += '<p>Estos productos también tienen un alcance bajo (con menos de 20 días) y necesitan ser monitoreados.</p>';
+            htmlContent += '<table class="recommendation-table">';
+            htmlContent += '<thead><tr><th>Producto</th><th>Tipo de Rotación</th><th>Alcances en Día</th></tr></thead><tbody>';
+            data.productos_criticos.forEach(item => {
+                htmlContent += `<tr><td>${item.Producto}</td><td>${item['Tipo de Rotacion']}</td><td>${item['Alcances en Dia'] !== undefined ? item['Alcances en Dia'].toFixed(2) : 'N/A'}</td></tr>`;
+            });
+            htmlContent += '</tbody></table>';
+        } else {
+            htmlContent += '<p>✅ No se encontraron otros productos críticos con bajo alcance.</p>';
         }
-    });
 
-    // Función para cargar los datos de la API
-    async function cargarCargasPorFecha(fecha) {
-        mostrarLoadingTabla(true);
-        historialTableBody.innerHTML = '';
-        noDataRow.style.display = 'none';
-
-        try {
-            const response = await fetch(`http://localhost:8080/api/cargas/fecha?fecha=${fecha}`);
-            if (!response.ok) {
-                if (response.status === 404) {
-                    noDataRow.style.display = 'table-row';
-                    return;
-                }
-                throw new Error(`Error HTTP: ${response.status}`);
-            }
-
-            const cargas = await response.json();
-            
-            if (cargas.length === 0) {
-                noDataRow.style.display = 'table-row';
-            } else {
-                renderizarTabla(cargas);
-            }
-
-        } catch (error) {
-            console.error('Error al cargar las cargas:', error);
-            const errorRow = document.createElement('tr');
-            errorRow.innerHTML = `<td colspan="7" style="text-align: center; color: red;">Error al cargar datos.</td>`;
-            historialTableBody.appendChild(errorRow);
-        } finally {
-            mostrarLoadingTabla(false);
+        // Productos con inventario excedente
+        if (data.productos_excedente && data.productos_excedente.length > 0) {
+            htmlContent += '<h4 class="alert-icon inventory">📦 Productos con Inventario Excedente:</h4>';
+            htmlContent += '<p>Considera revisar estos productos con más de 45 días de alcance para optimizar el espacio y capital.</p>';
+            htmlContent += '<table class="recommendation-table">';
+            htmlContent += '<thead><tr><th>Producto</th><th>Tipo de Rotación</th><th>Alcances en Día</th></tr></thead><tbody>';
+            data.productos_excedente.forEach(item => {
+                htmlContent += `<tr><td>${item.Producto}</td><td>${item['Tipo de Rotacion']}</td><td>${item['Alcances en Dia'] !== undefined ? item['Alcances en Dia'].toFixed(2) : 'N/A'}</td></tr>`;
+            });
+            htmlContent += '</tbody></table>';
+        } else {
+            htmlContent += '<p>✨ No se encontraron productos con inventario excesivo.</p>';
         }
+        
+        modalBody.innerHTML = htmlContent;
     }
-
-    function renderizarTabla(cargas) {
-        cargas.forEach(carga => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${carga.folio || 'N/A'}</td>
-                <td>${carga.codigoPintura || 'N/A'}</td>
-                <td>${carga.tipoPintura || 'N/A'}</td>
-                <td>${(carga.totalLitros || 0).toFixed(2)}</td>
-                <td>${carga.maquinaAsignada || 'N/A'}</td>
-                <td>${carga.rondaAsignada || 'N/A'}</td>
-                <td>${carga.numeroBase || 'N/A'}</td>
-            `;
-            historialTableBody.appendChild(row);
-        });
-    }
-
-    function mostrarLoadingTabla(mostrar) {
-        loadingRow.style.display = mostrar ? 'table-row' : 'none';
-        historialTableBody.style.opacity = mostrar ? 0.5 : 1;
-    }
-});
 </script>
 
-<script src="js/script.js"></script>
-<script src="js/esmalte-menu.js"></script>
-
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const codigoInput = document.getElementById('codigo');
-    const mediosInput = document.getElementById('medios');
-    const litrosInput = document.getElementById('litros');
-    const galonesInput = document.getElementById('galones');
-    const cubetasInput = document.getElementById('cubetas');
-
-    const cantMedios = document.getElementById('cantMedios');
-    const cantLitros = document.getElementById('cantLitros');
-    const cantGalones = document.getElementById('cantGalones');
-    const cantCubetas = document.getElementById('cantCubetas');
-
-    const litrosMedios = document.getElementById('litrosMedios');
-    const litrosLitros = document.getElementById('litrosLitros');
-    const litrosGalones = document.getElementById('litrosGalones');
-    const litrosCubetas = document.getElementById('litrosCubetas');
-
-    const totalDistribucionSpan = document.getElementById('totalDistribucion');
-    const totalTabla = document.getElementById('litrosTotalTabla');
-
-    async function actualizarEnvasesDisponibles(codigo) {
-        try {
-            const response = await fetch(`http://localhost:8080/api/productos/envases/${codigo}`);
-            if (!response.ok) throw new Error('Error al obtener envases');
-
-            const envases = await response.json();
-            // Primero mostramos todos los envases
-            [mediosInput, litrosInput, galonesInput, cubetasInput].forEach(i => {
-                i.parentElement.style.display = 'block';
-                i.value = 0;
-            });
-
-            console.log('Envases recibidos de la API:', envases);
-
-            // Ocultar los envases que NO vienen en la respuesta
-            const disponibles = envases.map(e => parseFloat(e.envase?.capacidad ?? e.capacidad));
-            if (!disponibles.includes(0.5)) mediosInput.parentElement.style.display = 'none';
-            if (!disponibles.includes(1)) litrosInput.parentElement.style.display = 'none';
-            if (!disponibles.includes(4)) galonesInput.parentElement.style.display = 'none';
-            if (!disponibles.includes(19)) cubetasInput.parentElement.style.display = 'none';
-
-            if (disponibles.length === 0) {
-                mostrarNotificacion('No hay envases disponibles para este código', 'error');
-            }
-
-        } catch (error) {
-            console.error('Error al obtener envases:', error);
-            [mediosInput, litrosInput, galonesInput, cubetasInput].forEach(i => {
-                i.parentElement.style.display = 'none';
-            });
-            mostrarNotificacion('Error al cargar envases', 'error');
-        }
-    }
-
-    function actualizarVistaDistribucion() {
-        const m = parseInt(mediosInput.value) || 0;
-        const l = parseInt(litrosInput.value) || 0;
-        const g = parseInt(galonesInput.value) || 0;
-        const c = parseInt(cubetasInput.value) || 0;
-
-        cantMedios.textContent = m;
-        cantLitros.textContent = l;
-        cantGalones.textContent = g;
-        cantCubetas.textContent = c;
-
-        litrosMedios.textContent = (m * 0.5).toFixed(2);
-        litrosLitros.textContent = (l * 1).toFixed(2);
-        litrosGalones.textContent = (g * 4).toFixed(2);
-        litrosCubetas.textContent = (c * 19).toFixed(2);
-
-        const total = m*0.5 + l*1 + g*4 + c*19;
-        totalDistribucionSpan.textContent = total.toFixed(2);
-        totalTabla.textContent = total.toFixed(2);
-    }
-
-    [mediosInput, litrosInput, galonesInput, cubetasInput].forEach(input => {
-        input.addEventListener('input', actualizarVistaDistribucion);
-    });
-
-    // Solo actualiza envases cuando salgas del campo de código
-    codigoInput.addEventListener('blur', () => {
-        const codigo = codigoInput.value.trim();
-        if (codigo) {
-            actualizarEnvasesDisponibles(codigo);
-        } else {
-            // Restaurar todos los envases si el campo está vacío
-            [mediosInput, litrosInput, galonesInput, cubetasInput].forEach(i => {
-                i.parentElement.style.display = 'block';
-                i.value = 0;
-            });
-            actualizarVistaDistribucion();
-        }
-    });
-
-    actualizarVistaDistribucion();
-});
-</script>
+<script src="js/script.js"></script> 
+<script src="js/esmalte-menu.js"></script> 
 
 </body>
 </html>
