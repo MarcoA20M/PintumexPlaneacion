@@ -1,6 +1,5 @@
 package com.pintumex.api.repository;
 
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,11 +11,12 @@ import java.util.List;
 @Repository
 public interface CargaVinilicaRepository extends JpaRepository<CargaVinilica, Long> {
     
-    // Aquí puedes definir métodos personalizados si los necesitas,
-    // como buscar por código de pintura o por máquina asignada.
-    // Ejemplo:
     List<CargaVinilica> findByCodigoPintura(String codigoPintura);
 
     List<CargaVinilica> findByFecha(LocalDate fecha);
     
+    // --- NUEVO MÉTODO AÑADIDO ---
+    // Este método buscará cargas que tengan un 'codigoPintura' en la lista proporcionada
+    // Y cuya 'fecha' sea posterior a la 'minFecha' especificada.
+    List<CargaVinilica> findByCodigoPinturaInAndFechaAfter(List<String> codigosPintura, LocalDate minFecha);
 }

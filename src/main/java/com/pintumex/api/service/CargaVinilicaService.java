@@ -34,5 +34,7 @@ public class CargaVinilicaService {
         return cargaVinilicaRepository.findByFecha(fecha);
     }
     
-    // Puedes agregar más métodos de negocio según tus necesidades
+    public List<CargaVinilica> findCargasInProcess(List<String> codigosPintura, LocalDate minFecha) {
+        return cargaVinilicaRepository.findByCodigoPinturaInAndFechaAfter(codigosPintura, minFecha);
+    }
 }

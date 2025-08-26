@@ -9,234 +9,53 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <style>
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            display: none;
-        }
+        /* (Tu CSS original) */
+        .loading-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.9);display:flex;justify-content:center;align-items:center;z-index:9999;display:none;}
+        .button-success{background-color:#28a745;color:white;border:none;padding:10px 15px;border-radius:5px;cursor:pointer;font-weight:500;transition:background-color .3s;}
+        .button-success:hover{background-color:#218838;}
+        .notification{position:fixed;top:20px;right:20px;padding:15px;border-radius:5px;color:white;display:none;z-index:1000;}
+        .notification.success{background-color:#28a745}.notification.error{background-color:#dc3545}
+        .recommendation-table{width:100%;border-collapse:collapse;margin-top:15px;box-shadow:0 2px 5px rgba(0,0,0,.1);border-radius:8px;overflow:hidden;font-family:'Inter',sans-serif;color:#333}
+        .recommendation-table th,.recommendation-table td{border:1px solid #e0e0e0;padding:12px 15px;text-align:left}
+        .recommendation-table th{background:#f8f8f8;font-weight:600;color:#555;text-transform:uppercase;font-size:.9em}
+        .recommendation-table tbody tr:nth-child(even){background:#fcfcfc}
+        .recommendation-table tbody tr:hover{background:#f0f8ff}
+        .loading-message,.error-message{padding:15px;border-radius:8px;margin-top:20px;font-weight:500;text-align:center}
+        .loading-message{background:#e3f2fd;color:#1565c0;border:1px solid #90caf9}
+        .error-message{background:#ffebee;color:#c62828;border:1px solid #ef9a9a}
+        h3,h4{color:#333;margin-top:25px;margin-bottom:10px;font-weight:600}
+        .card{background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08);padding:30px;margin-bottom:20px}
+        h4.alert-icon{display:flex;align-items:center;gap:10px}
+        h4.alert-icon i{font-size:1.2em}
 
-        .button-success {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background-color 0.3s;
-        }
+        .modal-loading-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);justify-content:center;align-items:center;z-index:2000}
+        .modal-loading-content{background:#fefefe;padding:30px 40px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.3);text-align:center;width:90%;max-width:400px;animation:fadeInScale .3s ease-out}
+        .loading-spinner-modal{display:flex;flex-direction:column;align-items:center;gap:15px;color:#007bff}
+        .loading-spinner-modal i{font-size:3.5em;color:#0056b3}
+        .loading-spinner-modal p{margin:0;font-size:1.1em;font-weight:600;color:#333}
+        .loading-spinner-modal .small-text{font-size:.85em;color:#666;margin-top:5px}
 
-        .button-success:hover {
-            background-color: #218838;
-        }
+        @keyframes fadeInScale{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
 
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px;
-            border-radius: 5px;
-            color: white;
-            display: none;
-            z-index: 1000;
-        }
+        #modalRecomendacion{display:none;position:fixed;z-index:3000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.6);justify-content:center;align-items:center;padding:16px}
+        #modalRecomendacion .modal-content{background:#fff;border-radius:15px;padding:25px;width:100%;max-width:1000px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,.2);animation:fadeInScale .3s ease-out}
+        #modalRecomendacion .modal-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+        #modalRecomendacion .close-button{cursor:pointer;font-size:28px;line-height:1}
+        #modalRecomendacion .modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+        .button-primary,.button-secondary,.button-tertiary,.button-danger{cursor:pointer}
 
-        .notification.success {
-            background-color: #28a745;
-        }
-
-        .notification.error {
-            background-color: #dc3545;
-        }
-        
-        /* --- ESTILOS PARA LAS TABLAS DE RECOMENDACIÓN --- */
-        .recommendation-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            overflow: hidden;
-            font-family: 'Inter', sans-serif;
-            color: #333;
-        }
-        .recommendation-table th, .recommendation-table td {
-            border: 1px solid #e0e0e0;
-            padding: 12px 15px;
-            text-align: left;
-        }
-        .recommendation-table th {
-            background-color: #f8f8f8;
-            font-weight: 600;
-            color: #555;
-            text-transform: uppercase;
-            font-size: 0.9em;
-        }
-        .recommendation-table tbody tr:nth-child(even) {
-            background-color: #fcfcfc;
-        }
-        .recommendation-table tbody tr:hover {
-            background-color: #f0f8ff;
-        }
-        .loading-message, .error-message {
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            font-weight: 500;
-            text-align: center;
-        }
-        .loading-message {
-            background-color: #e3f2fd;
-            color: #1565c0;
-            border: 1px solid #90caf9;
-        }
-        .error-message {
-            background-color: #ffebee;
-            color: #c62828;
-            border: 1px solid #ef9a9a;
-        }
-        h3, h4 {
-            color: #333;
-            margin-top: 25px;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-        .card {
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            padding: 30px;
-            margin-bottom: 20px;
-        }
-        h4.alert-icon {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        h4.alert-icon i {
-            font-size: 1.2em;
-        }
-
-        /* --- Estilos para el nuevo Modal de Recomendaciones --- */
-        .modal {
-            display: none; /* Oculto por defecto */
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6); /* Fondo oscuro transparente */
-            justify-content: center;
-            align-items: center;
-            overflow-y: auto; /* Para permitir el scroll si el contenido es largo */
-        }
-        
-        .modal-content.modal-recommendation {
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-            width: 90%;
-            max-width: 900px; /* Ancho máximo para el modal */
-            transform: translateY(20px);
-            transition: transform 0.3s ease-out;
-        }
-        
-        /* Animación de entrada para el modal */
-        .modal.show {
-            display: flex;
-        }
-        .modal.show .modal-content {
-            transform: translateY(0);
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .modal-header h2 {
-            margin: 0;
-            font-size: 1.8rem;
-            color: #333;
-        }
-        
-        .close-button {
-            color: #aaa;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        
-        .close-button:hover,
-        .close-button:focus {
-            color: #333;
-        }
-        
-        .modal-body {
-            max-height: 70vh; /* Altura máxima para el cuerpo del modal */
-            overflow-y: auto; /* Scroll si el contenido excede la altura */
-        }
-        
-        .recommendation-table {
-            border-radius: 8px;
-            overflow: hidden;
-            margin-bottom: 25px;
-            background-color: #fcfcfc;
-        }
-        .recommendation-table th {
-            background-color: #e9ecef;
-            color: #495057;
-        }
-        .recommendation-table td {
-            background-color: #ffffff;
-        }
-        .recommendation-table tbody tr:hover {
-            background-color: #eef7ff;
-        }
-        
-        .loading-message, .error-message {
-            padding: 20px;
-            font-size: 1.1em;
-        }
-        
-        .alert-icon {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.4rem;
-            margin-top: 30px;
-            margin-bottom: 15px;
-        }
-        
-        .alert-icon i {
-            font-size: 1.5rem;
-        }
-        
-        h4.alert-icon.attention i { color: #dc3545; }
-        h4.alert-icon.warning i { color: #ffc107; }
-        h4.alert-icon.inventory i { color: #17a2b8; }
+        /* Estilos simples para zona de filtros */
+        .filtros-recomendacion { display:flex; gap:10px; margin: 12px 0 18px; align-items:center; flex-wrap:wrap; }
+        .filtros-recomendacion input, .filtros-recomendacion select { padding:8px 10px; border:1px solid #ddd; border-radius:8px; font-size:14px; }
+        #tablaRecomendacionContainer { margin-top: 6px; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <!-- (Tu HTML original — formulario, vista previa, etc.) -->
     <div class="main-content-grid">
         <div class="form-section card">
             <div class="header-controls">
@@ -280,7 +99,6 @@
                     <button type="submit" class="button-primary">Agregar Carga</button>
                     <button type="button" id="verCargas" class="button-secondary">Lista de Cargas</button>
                     <button type="button" id="btnRecomendar" class="button-secondary">Recomendar Programación</button>
-                    <input type="file" id="excelFile" accept=".xlsx, .xls" style="display:none;" />
                     <button type="button" id="guardarEnBD" class="button-success">
                         <i class="fas fa-database"></i> Guardar en BD
                     </button>
@@ -305,7 +123,7 @@
                     <p><strong>Prioridad:</strong> <span id="prioridadProducto"></span></p>
                 </div>
             </div>
-            
+
             <div class="distribution-section card">
                 <h3>Vista previa distribución</h3>
                 <div class="table-container">
@@ -353,7 +171,7 @@
             </div>
         </div>
     </div>
-    
+
     <div id="vinilicaMode">
         <div id="tablaRondas" class="tabla-rondas card"></div>
         <div class="footer-buttons">
@@ -364,16 +182,16 @@
             </button>
         </div>
     </div>
-    
+
     <div id="esmalteMode" style="display: none;">
         <div class="esmalte-content">
             <h3>Cargas de Esmalte</h3>
             <div id="esmalte-cards-container"></div>
         </div>
     </div>
-
 </div>
 
+<!-- Modales existentes (lista, detalle, loading) -->
 <div id="modalCargas" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -392,8 +210,7 @@
                             <th>Fecha</th>
                         </tr>
                     </thead>
-                    <tbody>
-                    </tbody>
+                    <tbody></tbody>
                 </table>
             </div>
         </div>
@@ -405,7 +222,7 @@
 
 <div id="loadingOverlay" class="loading-overlay">
     <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Cargando...</span>
+        <span class="visualmente-oculto">Cargando...</span>
     </div>
     <span class="ms-2">Guardando en base de datos...</span>
 </div>
@@ -420,46 +237,16 @@
         </div>
         <div class="modal-body">
             <div class="vinilica-details">
-                <div class="detail-row">
-                    <div class="detail-label">Folio:</div>
-                    <div class="detail-value" id="modalFolio"></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Código:</div>
-                    <div class="detail-value" id="modalCodigo"></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Descripción:</div>
-                    <div class="detail-value" id="modalDescripcion"></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Base:</div>
-                    <div class="detail-value" id="modalBase"></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Categoría:</div>
-                    <div class="detail-value" id="modalCategoria"></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Prioridad:</div>
-                    <div class="detail-value" id="modalPrioridad"></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Máquina:</div>
-                    <div class="detail-value" id="modalMaquina"></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Ronda:</div>
-                    <div class="detail-value" id="modalRonda"></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Total de Litros:</div>
-                    <div class="detail-value" id="modalLitros"></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Distribución:</div>
-                    <div class="detail-value" id="modalDistribucion"></div>
-                </div>
+                <div class="detail-row"><div class="detail-label">Folio:</div><div class="detail-value" id="modalFolio"></div></div>
+                <div class="detail-row"><div class="detail-label">Código:</div><div class="detail-value" id="modalCodigo"></div></div>
+                <div class="detail-row"><div class="detail-label">Descripción:</div><div class="detail-value" id="modalDescripcion"></div></div>
+                <div class="detail-row"><div class="detail-label">Base:</div><div class="detail-value" id="modalBase"></div></div>
+                <div class="detail-row"><div class="detail-label">Categoría:</div><div class="detail-value" id="modalCategoria"></div></div>
+                <div class="detail-row"><div class="detail-label">Prioridad:</div><div class="detail-value" id="modalPrioridad"></div></div>
+                <div class="detail-row"><div class="detail-label">Máquina:</div><div class="detail-value" id="modalMaquina"></div></div>
+                <div class="detail-row"><div class="detail-label">Ronda:</div><div class="detail-value" id="modalRonda"></div></div>
+                <div class="detail-row"><div class="detail-label">Total de Litros:</div><div class="detail-value" id="modalLitros"></div></div>
+                <div class="detail-row"><div class="detail-label">Distribución:</div><div class="detail-value" id="modalDistribucion"></div></div>
             </div>
         </div>
         <div class="modal-footer">
@@ -469,19 +256,37 @@
     </div>
 </div>
 
-<div id="modalRecomendaciones" class="modal">
-    <div class="modal-content modal-recommendation">
-        <div class="modal-header">
-            <h2>Recomendación de Producción</h2>
-            <span class="close-button" id="closeModalRecomendaciones">&times;</span>
+<!-- Loading modal para el análisis del excel -->
+<div id="excelLoadingModal" class="modal-loading-overlay">
+    <div class="modal-loading-content">
+        <div class="loading-spinner-modal">
+            <i class="fas fa-spinner fa-pulse"></i>
+            <p>Analizando su inventario... un momento, por favor.</p>
+            <p class="small-text">Esto puede tardar unos segundos dependiendo del tamaño del archivo.</p>
         </div>
-        <div class="modal-body" id="modalBodyRecomendaciones">
-            </div>
     </div>
 </div>
+
+<!-- Modal de resultados con filtros -->
+<div id="modalRecomendacion" class="modal">
+    <div class="modal-content modal-vinilica">
+        <div class="modal-header">
+            <h2>Recomendaciones de Producción</h2>
+            <span class="close-button" id="closeModalRecomendacion">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div id="contenidoRecomendacion"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="button-secondary" id="cerrarRecomendacion">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- SCRIPTS -->
 <script>
-    // --- Funciones auxiliares para notificaciones y carga (si las tienes en este archivo) ---
-    async function guardarEnBaseDeDatos() { 
+    // --- Funciones auxiliares para notificaciones y carga ---
+    async function guardarEnBaseDeDatos() {
         try {
             mostrarLoading(true);
             const cargasVisuales = document.querySelectorAll('.carga-card');
@@ -521,7 +326,7 @@
                     rondaAsignada: rondaAsignada,
                 });
             });
-            console.log("Enviando cargas vinílicas:", cargasAEnviar);
+            console.log('Enviando cargas vinílicas:', cargasAEnviar);
             const response = await fetch('http://localhost:8080/api/cargas/vinilicas', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -529,7 +334,7 @@
             });
             if (!response.ok) { throw new Error(`Error HTTP: ${response.status}`); }
             const result = await response.json();
-            console.log("Respuesta del servidor:", result);
+            console.log('Respuesta del servidor:', result);
             if (result && Array.isArray(result)) {
                 mostrarNotificacion(`¡Éxito! Se guardaron ${result.length} cargas vinílicas`, 'success');
                 setTimeout(() => { location.reload(); }, 2000);
@@ -552,11 +357,9 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         const guardarEnBDBtn = document.getElementById('guardarEnBD');
-        if (guardarEnBDBtn) {
-            guardarEnBDBtn.addEventListener('click', guardarEnBaseDeDatos);
-        }
+        if (guardarEnBDBtn) { guardarEnBDBtn.addEventListener('click', guardarEnBaseDeDatos); }
         const fechaInput = document.getElementById('fechaCargas');
-        if (fechaInput) { 
+        if (fechaInput) {
             fechaInput.addEventListener('change', (event) => {
                 const fechaSeleccionada = event.target.value;
                 if (fechaSeleccionada) { window.location.href = `historial.html?fecha=${fechaSeleccionada}`; }
@@ -564,7 +367,7 @@
         }
     });
 
-    // --- Script para la lógica del formulario de carga y distribución de envases ---
+    // --- Lógica del formulario de carga y distribución de envases ---
     document.addEventListener('DOMContentLoaded', function() {
         const codigoInput = document.getElementById('codigo');
         const mediosInput = document.getElementById('medios');
@@ -597,14 +400,10 @@
                 if (!disponibles.includes(1)) litrosInput.parentElement.style.display = 'none';
                 if (!disponibles.includes(4)) galonesInput.parentElement.style.display = 'none';
                 if (!disponibles.includes(19)) cubetasInput.parentElement.style.display = 'none';
-                if (disponibles.length === 0) {
-                    mostrarNotificacion('No hay envases disponibles para este código', 'error');
-                }
+                if (disponibles.length === 0) { mostrarNotificacion('No hay envases disponibles para este código', 'error'); }
             } catch (error) {
                 console.error('Error al obtener envases:', error);
-                [mediosInput, litrosInput, galonesInput, cubetasInput].forEach(i => {
-                    i.parentElement.style.display = 'none';
-                });
+                [mediosInput, litrosInput, galonesInput, cubetasInput].forEach(i => { i.parentElement.style.display = 'none'; });
                 mostrarNotificacion('Error al cargar envases', 'error');
             }
         }
@@ -625,157 +424,244 @@
             totalDistribucionSpan.textContent = total.toFixed(2);
             totalTabla.textContent = total.toFixed(2);
         }
-        [mediosInput, litrosInput, galonesInput, cubetasInput].forEach(input => {
-            input.addEventListener('input', actualizarVistaDistribucion);
-        });
+        [mediosInput, litrosInput, galonesInput, cubetasInput].forEach(input => { input.addEventListener('input', actualizarVistaDistribucion); });
         codigoInput.addEventListener('blur', () => {
             const codigo = codigoInput.value.trim();
             if (codigo) {
                 actualizarEnvasesDisponibles(codigo);
             } else {
-                [mediosInput, litrosInput, galonesInput, cubetasInput].forEach(i => {
-                    i.parentElement.style.display = 'block';
-                    i.value = 0;
-                });
+                [mediosInput, litrosInput, galonesInput, cubetasInput].forEach(i => { i.parentElement.style.display = 'block'; i.value = 0; });
                 actualizarVistaDistribucion();
             }
         });
         actualizarVistaDistribucion();
     });
 
-    // --- SCRIPT PRINCIPAL PARA LA FUNCIONALIDAD DE RECOMENDACIÓN DE EXCEL ---
+    // --- SCRIPT PRINCIPAL PARA LA FUNCIONALIDAD DE RECOMENDACIÓN DE EXCEL (con spinner + MODAL + FILTROS) ---
     document.addEventListener('DOMContentLoaded', () => {
-        const btnRecomendar = document.getElementById('btnRecomendar');
-        const excelFileInput = document.getElementById('excelFile');
-        const modalRecomendaciones = document.getElementById('modalRecomendaciones');
-        const modalBody = document.getElementById('modalBodyRecomendaciones');
-        const closeBtnRecomendaciones = document.getElementById('closeModalRecomendaciones');
+        const excelLoadingModal = document.getElementById('excelLoadingModal');
+        const modalRecomendacion = document.getElementById('modalRecomendacion');
+        const contenidoRecomendacion = document.getElementById('contenidoRecomendacion');
+        const closeModalRecomendacion = document.getElementById('closeModalRecomendacion');
+        const cerrarRecomendacion = document.getElementById('cerrarRecomendacion');
+        const tablaRondas = document.getElementById('tablaRondas');
 
-        // Maneja la apertura del modal al hacer clic en el botón
-        btnRecomendar.addEventListener('click', () => {
-            excelFileInput.click(); // Activa el clic en el input de archivo oculto
-        });
+        let recomendacionesRaw = null; // guardará el objeto completo devuelto por el backend
 
-        // Escucha el evento 'change' del input de archivo
-        excelFileInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (!file) {
-                console.log("No se seleccionó ningún archivo.");
-                return; // Si el usuario cierra la ventana, la función termina aquí.
-            }
+        // click en el botón recomendar -> abrir file picker y enviar
+        document.getElementById('btnRecomendar').addEventListener('click', () => {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.xlsx, .xls';
+            fileInput.addEventListener('change', async (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
 
-            // Mostrar el modal y el mensaje de carga
-            modalRecomendaciones.classList.add('show');
-            modalBody.innerHTML = '<p class="loading-message"><i class="fas fa-spinner fa-spin"></i> Procesando el archivo... por favor, espere.</p>';
+                excelLoadingModal.style.display = 'flex';
+                tablaRondas.innerHTML = '';
 
-            const formData = new FormData();
-            formData.append('file', file);
+                const formData = new FormData();
+                formData.append('file', file);
 
-            fetch('http://localhost:5000/recomendar', { 
-                method: 'POST',
-                body: formData,
-            })
-            .then(res => {
-                if (!res.ok) {
-                    return res.json().then(errorData => {
-                        throw new Error(errorData.error || `Error en el servidor: ${res.status}`);
-                    });
+                try {
+                    const res = await fetch('http://localhost:5001/recomendar', { method: 'POST', body: formData });
+                    if (!res.ok) {
+                        let errorText = 'Error en el servidor';
+                        try { const err = await res.json(); errorText = err.error || errorText; } catch {}
+                        throw new Error(`${errorText} (HTTP ${res.status})`);
+                    }
+                    const data = await res.json();
+                    // Mostrar resultados con filtros en modal
+                    mostrarRecomendacionEnModal(data);
+                } catch (error) {
+                    console.error('Error al subir o analizar el archivo:', error);
+                    contenidoRecomendacion.innerHTML = `<p class="error-message"><i class="fas fa-exclamation-triangle"></i> Error al procesar el archivo: ${error.message}.</p>`;
+                    modalRecomendacion.style.display = 'flex';
+                } finally {
+                    excelLoadingModal.style.display = 'none';
                 }
-                return res.json();
-            })
-            .then(data => {
-                mostrarRecomendacionEnModal(data);
-            })
-            .catch(error => {
-                console.error('Error al subir o analizar el archivo:', error);
-                modalBody.innerHTML = `<p class="error-message"><i class="fas fa-exclamation-triangle"></i> Error al procesar el archivo: ${error.message}.</p>`;
-            })
-            .finally(() => {
-                // Reinicia el valor del input de archivo para que el evento 'change' se dispare la próxima vez
-                excelFileInput.value = '';
             });
+            fileInput.click();
         });
 
-        // Cierra el modal cuando se hace clic en la X
-        closeBtnRecomendaciones.addEventListener('click', () => {
-            modalRecomendaciones.classList.remove('show');
-        });
+        // cierre modal
+        function cerrarModalRecomendacion() { modalRecomendacion.style.display = 'none'; }
+        if (closeModalRecomendacion) closeModalRecomendacion.addEventListener('click', cerrarModalRecomendacion);
+        if (cerrarRecomendacion) cerrarRecomendacion.addEventListener('click', cerrarModalRecomendacion);
+        window.addEventListener('click', (e) => { if (e.target === modalRecomendacion) cerrarModalRecomendacion(); });
 
-        // Cierra el modal si se hace clic fuera de él
-        window.addEventListener('click', (event) => {
-            if (event.target === modalRecomendaciones) {
-                modalRecomendaciones.classList.remove('show');
+        // Normaliza / extrae valor numérico de "Alcances en Dia" variando claves posibles
+        function getAlcancesNumeric(item) {
+            const candidates = ['Alcances en Dia','Alcances en Día','Alcances','alcances','alcance','Alcances_en_Dia'];
+            for (const key of candidates) {
+                if (item[key] !== undefined && item[key] !== null && item[key] !== '') {
+                    const n = Number(String(item[key]).replace(',', '.'));
+                    if (!isNaN(n)) return n;
+                }
             }
-        });
-    });
-
-    // --- Función para mostrar las recomendaciones en el nuevo modal ---
-    function mostrarRecomendacionEnModal(data) {
-        const modalBody = document.getElementById('modalBodyRecomendaciones');
-        let htmlContent = '';
-
-        if (data.error) {
-            htmlContent = `<p class="error-message"><i class="fas fa-exclamation-circle"></i> Error: ${data.error}</p>`;
-            modalBody.innerHTML = htmlContent;
-            return;
+            return null;
         }
 
-        if (data.warnings && data.warnings.length > 0) {
-            data.warnings.forEach(warning => {
-                htmlContent += `<p class="error-message"><i class="fas fa-exclamation-triangle"></i> ${warning}</p>`;
+        // Devuelve array normalizado según la sección solicitada
+        function getItemsForSection(sectionKey) {
+            if (!recomendacionesRaw) return [];
+            const arr = Array.isArray(recomendacionesRaw[sectionKey]) ? recomendacionesRaw[sectionKey] : [];
+            return arr.map(it => {
+                return {
+                    Producto: it.Producto ?? it.producto ?? it.nombre ?? it.Codigo ?? it.codigo ?? '',
+                    TipoDeRotacion: it['Tipo de Rotacion'] ?? it.tipoRotacion ?? it.tipo ?? '',
+                    AlcancesDia: getAlcancesNumeric(it)
+                };
             });
         }
 
-        htmlContent += `<h3>Análisis de Inventario Completado <i class="fas fa-chart-bar"></i></h3>`;
 
-        // Sugerencias críticas de alta rotación (¡PRIORIDAD MÁXIMA!)
-        if (data.sugerencias_criticas_alta_rotacion && data.sugerencias_criticas_alta_rotacion.length > 0) {
-            htmlContent += '<h4 class="alert-icon attention">🚨 ¡ATENCIÓN! Productos de Alta Rotación Críticos:</h4>';
-            htmlContent += '<p>Estos productos se mueven muy rápido y tienen un alcance de inventario muy bajo. ¡Revisar urgentemente!</p>';
-            htmlContent += '<table class="recommendation-table">';
-            htmlContent += '<thead><tr><th>Producto</th><th>Tipo de Rotación</th><th>Alcances en Día</th></tr></thead><tbody>';
-            data.sugerencias_criticas_alta_rotacion.forEach(item => {
-                htmlContent += `<tr><td>${item.Producto}</td><td>${item['Tipo de Rotacion']}</td><td>${item['Alcances en Dia'] !== undefined ? item['Alcances en Dia'].toFixed(2) : 'N/A'}</td></tr>`;
-            });
-            htmlContent += '</tbody></table>';
-        } else {
-            htmlContent += '<p>🎉 ¡Buenas noticias! No se encontraron productos de alta rotación con un alcance crítico.</p>';
-        }
-
-        // Productos críticos generales
-        if (data.productos_criticos && data.productos_criticos.length > 0) {
-            htmlContent += '<h4 class="alert-icon warning">⚠️ Otros Productos Críticos:</h4>';
-            htmlContent += '<p>Estos productos también tienen un alcance bajo (con menos de 20 días) y necesitan ser monitoreados.</p>';
-            htmlContent += '<table class="recommendation-table">';
-            htmlContent += '<thead><tr><th>Producto</th><th>Tipo de Rotación</th><th>Alcances en Día</th></tr></thead><tbody>';
-            data.productos_criticos.forEach(item => {
-                htmlContent += `<tr><td>${item.Producto}</td><td>${item['Tipo de Rotacion']}</td><td>${item['Alcances en Dia'] !== undefined ? item['Alcances en Dia'].toFixed(2) : 'N/A'}</td></tr>`;
-            });
-            htmlContent += '</tbody></table>';
-        } else {
-            htmlContent += '<p>✅ No se encontraron otros productos críticos con bajo alcance.</p>';
-        }
-
-        // Productos con inventario excedente
-        if (data.productos_excedente && data.productos_excedente.length > 0) {
-            htmlContent += '<h4 class="alert-icon inventory">📦 Productos con Inventario Excedente:</h4>';
-            htmlContent += '<p>Considera revisar estos productos con más de 45 días de alcance para optimizar el espacio y capital.</p>';
-            htmlContent += '<table class="recommendation-table">';
-            htmlContent += '<thead><tr><th>Producto</th><th>Tipo de Rotación</th><th>Alcances en Día</th></tr></thead><tbody>';
-            data.productos_excedente.forEach(item => {
-                htmlContent += `<tr><td>${item.Producto}</td><td>${item['Tipo de Rotacion']}</td><td>${item['Alcances en Dia'] !== undefined ? item['Alcances en Dia'].toFixed(2) : 'N/A'}</td></tr>`;
-            });
-            htmlContent += '</tbody></table>';
-        } else {
-            htmlContent += '<p>✨ No se encontraron productos con inventario excesivo.</p>';
-        }
         
-        modalBody.innerHTML = htmlContent;
-    }
+        // Construye y muestra la UI del modal (warnings + filtros + container)
+        function mostrarRecomendacionEnModal(data) {
+            recomendacionesRaw = data || {};
+            // Si backend envía error
+            if (data && data.error) {
+                contenidoRecomendacion.innerHTML = `<p class="error-message"><i class="fas fa-exclamation-circle"></i> Error: ${data.error}</p>`;
+                modalRecomendacion.style.display = 'flex';
+                return;
+            }
+
+            let htmlTop = '';
+            // warnings si existen
+            if (data && data.warnings && data.warnings.length > 0) {
+                data.warnings.forEach(w => {
+                    htmlTop += `<p class="error-message"><i class="fas fa-exclamation-triangle"></i> ${w}</p>`;
+                });
+            }
+
+            htmlTop += `<h3>Análisis de Inventario Completado <i class="fas fa-chart-bar"></i></h3>`;
+
+            // Filtros: selector de sección + búsqueda + orden
+            htmlTop += `
+                <div class="filtros-recomendacion">
+                    <select id="seccionRecomendacion" title="Sección">
+                        <option value="productos_criticos_sin_carga">Críticos SIN Carga</option>
+                        <option value="productos_criticos_con_carga">Críticos CON Carga</option>
+                        <option value="sugerencias_criticas_alta_rotacion">Alta Rotación</option>
+                        <option value="productos_excedente">Excedente</option>
+                    </select>
+
+                    <input id="buscarRecomendacion" placeholder="Buscar por producto o tipo" />
+
+                    <select id="ordenarRecomendacion" title="Ordenar">
+                        <option value="ninguno">Ordenar por...</option>
+                        <option value="alcanceAsc">Alcance (menor a mayor)</option>
+                        <option value="alcanceDesc">Alcance (mayor a menor)</option>
+                        <option value="nombreAsc">Nombre (A → Z)</option>
+                        <option value="nombreDesc">Nombre (Z → A)</option>
+                    </select>
+                </div>
+
+                <div id="tablaRecomendacionContainer"></div>
+            `;
+
+            contenidoRecomendacion.innerHTML = htmlTop;
+            // attach listeners
+            const seccionEl = document.getElementById('seccionRecomendacion');
+            const buscarEl = document.getElementById('buscarRecomendacion');
+            const ordenarEl = document.getElementById('ordenarRecomendacion');
+
+            if (seccionEl) seccionEl.addEventListener('change', aplicarFiltros);
+            if (buscarEl) buscarEl.addEventListener('input', aplicarFiltros);
+            if (ordenarEl) ordenarEl.addEventListener('change', aplicarFiltros);
+
+            // render inicial
+            aplicarFiltros();
+
+            modalRecomendacion.style.display = 'flex';
+        }
+
+        // Aplica búsqueda y orden sobre la sección seleccionada
+        function aplicarFiltros() {
+            const seccion = document.getElementById('seccionRecomendacion')?.value || 'productos_criticos_sin_carga';
+            const texto = (document.getElementById('buscarRecomendacion')?.value || '').toLowerCase();
+            const orden = document.getElementById('ordenarRecomendacion')?.value || 'ninguno';
+
+            let items = getItemsForSection(seccion);
+
+            // filtro de búsqueda sobre Producto o TipoDeRotacion
+            if (texto) {
+                items = items.filter(it => {
+                    const p = (it.Producto || '').toString().toLowerCase();
+                    const t = (it.TipoDeRotacion || '').toString().toLowerCase();
+                    return p.includes(texto) || t.includes(texto);
+                });
+            }
+
+            // ordenamiento
+            if (orden === 'alcanceAsc') {
+                items.sort((a,b) => {
+                    const A = a.AlcancesDia === null ? Infinity : a.AlcancesDia;
+                    const B = b.AlcancesDia === null ? Infinity : b.AlcancesDia;
+                    return A - B;
+                });
+            } else if (orden === 'alcanceDesc') {
+                items.sort((a,b) => {
+                    const A = a.AlcancesDia === null ? -Infinity : a.AlcancesDia;
+                    const B = b.AlcancesDia === null ? -Infinity : b.AlcancesDia;
+                    return B - A;
+                });
+            } else if (orden === 'nombreAsc') {
+                items.sort((a,b) => (a.Producto||'').localeCompare(b.Producto||''));
+            } else if (orden === 'nombreDesc') {
+                items.sort((a,b) => (b.Producto||'').localeCompare(a.Producto||''));
+            }
+
+            renderizarRecomendaciones(items);
+        }
+
+        // Renderiza la tabla con los items ya filtrados/ordenados
+        function renderizarRecomendaciones(items) {
+            const container = document.getElementById('tablaRecomendacionContainer');
+            if (!items || items.length === 0) {
+                container.innerHTML = `<p class="loading-message">No hay coincidencias en esta sección.</p>`;
+                return;
+            }
+
+            let html = `
+                <table class="recommendation-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Tipo de Rotación</th>
+                            <th>Alcances en Día</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            items.forEach(it => {
+                html += `<tr>
+                    <td>${escapeHtml(it.Producto)}</td>
+                    <td>${escapeHtml(it.TipoDeRotacion)}</td>
+                    <td>${it.AlcancesDia !== null && it.AlcancesDia !== undefined ? Number(it.AlcancesDia).toFixed(2) : 'N/A'}</td>
+                </tr>`;
+            });
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        // pequeña función para prevenir inyección (básica)
+        function escapeHtml(text) {
+            if (!text && text !== 0) return '';
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+    });
 </script>
 
-<script src="js/script.js"></script> 
-<script src="js/esmalte-menu.js"></script> 
+<script src="js/script.js"></script>
+<script src="js/esmalte-menu.js"></script>
 
 </body>
 </html>

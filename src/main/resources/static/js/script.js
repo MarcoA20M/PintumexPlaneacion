@@ -653,56 +653,7 @@ codigoInput.addEventListener('blur', cargarProductoPorCodigo);
     input.addEventListener('input', actualizarDistribucion);
 });
 
-document.getElementById('btnRecomendar').addEventListener('click', () => {
-    // Crea un input de tipo 'file' temporal y lo "clica"
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = '.xlsx, .xls'; // Solo permite archivos Excel
-    
-    // Escucha cuando se selecciona un archivo
-    fileInput.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        if (!file) {
-            console.log("No se seleccionó ningún archivo.");
-            return; // No se seleccionó ningún archivo
-        }
 
-        // Muestra un mensaje de carga mientras se procesa el archivo
-        const tablaRondas = document.getElementById('tablaRondas');
-        tablaRondas.innerHTML = '<p class="loading-message">Procesando el archivo... por favor, espere.</p>';
-
-        // Crea un objeto FormData para enviar el archivo
-        const formData = new FormData();
-        formData.append('file', file); // 'file' debe coincidir con el nombre esperado en Flask (request.files['file'])
-
-        // Envía el archivo al backend de Flask usando fetch con el método POST
-        // Asegúrate de que esta URL coincida con tu endpoint de Flask
-        fetch('http://localhost:5000/recomendar', { 
-            method: 'POST',
-            body: formData,
-        })
-        .then(res => {
-            if (!res.ok) {
-                // Si la respuesta no es OK (ej. 400, 500), lee el error del servidor
-                return res.json().then(errorData => {
-                    throw new Error(errorData.error || `Error en el servidor: ${res.status}`);
-                });
-            }
-            return res.json();
-        })
-        .then(data => {
-            mostrarRecomendacion(data); // Llama a tu función para mostrar la recomendación
-        })
-        .catch(error => {
-            console.error('Error al subir o analizar el archivo:', error);
-            // Muestra un mensaje de error detallado al usuario
-            tablaRondas.innerHTML = `<p class="error-message">Error al procesar el archivo: ${error.message}.</p>`;
-        });
-    });
-
-    // Desencadena el diálogo de selección de archivo
-    fileInput.click();
-});
 
 function mostrarRecomendacion(data) {
     const contenedor = document.getElementById('tablaRondas');

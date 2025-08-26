@@ -53,4 +53,20 @@ public class CargaVinilicaController {
         
         return ResponseEntity.ok(cargas);
     }
+
+
+ @GetMapping("/vinilicas/en-proceso") // La ruta específica para este endpoint
+    public ResponseEntity<List<CargaVinilica>> getCargasEnProceso(
+            @RequestParam List<String> codigos, // Parámetro de URL para una lista de códigos
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate minFecha) { // Parámetro de URL para la fecha mínima
+        
+        // Verifica si la lista de códigos está vacía para evitar errores
+        if (codigos == null || codigos.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST); // Retorna 400 Bad Request si no hay códigos
+        }
+        
+        // Llama al servicio para obtener las cargas en proceso
+        List<CargaVinilica> cargas = cargaVinilicaService.findCargasInProcess(codigos, minFecha);
+        return new ResponseEntity<>(cargas, HttpStatus.OK); // Retorna 200 OK con la lista de cargas
+    }
 }
