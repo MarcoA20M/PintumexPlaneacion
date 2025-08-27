@@ -1049,13 +1049,33 @@ function habilitarDragAndDrop() {
     });
 }
 
+document.getElementById('exportarWord').addEventListener('click', function() {
+    document.getElementById('pdfFile').click();
+});
 
-// Asegúrate de que este archivo sea una continuación de tu script.js
-// o reemplaza la sección de exportación.
+document.getElementById('pdfFile').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const formData = new FormData();
+        formData.append('pdfFile', file);
+        formData.append('codigos', 'ADT20,CCP15,ABL10'); // Pasa tus códigos como una cadena
 
-// ... (todo el código JavaScript anterior) ...
+        fetch('http://tu-backend-java.com/api/subrayar', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+           
+            window.location.href = data.downloadUrl; 
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+});
 
-// Nuevo código para el botón de exportar
 document.addEventListener('DOMContentLoaded', function() {
     const exportButton = document.getElementById('exportarVinilicas');
     const pythonServiceUrl = 'http://localhost:5000/generate-report'; 
@@ -1099,11 +1119,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Recopilar cargas de esmaltes
-            // Asume que cargasGuardadas es un array global que almacena las cargas de esmalte
             const cargasEsmaltes = cargasGuardadas.filter(c => c.tipoPintura === 'esmalte');
-
-            // Enviar ambas listas al servidor
             const response = await fetch(pythonServiceUrl, {
                 method: 'POST',
                 headers: {
@@ -1164,15 +1180,8 @@ form.addEventListener('submit', (event) => {
         mensajeElemento.textContent = ''; // Limpia el texto por si acaso
     }, 3000); // 3000 milisegundos = 3 segundos
 
-    // Tu código para procesar la carga va aquí...
 });
 
-
-// ====== Funcionalidad para el Modal de Vinílicas ======
-
-// ====== FUNCIONALIDAD PARA EL MODAL DE VINÍLICAS ======
-
-// Función para abrir el modal con la información de la carga
 function abrirModalVinilica(card) {
     const modal = document.getElementById('modalVinilica');
     const cargaData = obtenerDatosCargaDesdeCard(card);
