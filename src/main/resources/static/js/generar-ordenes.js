@@ -1,4 +1,4 @@
-// js/generar-ordenes.js
+const mapaMaquinaOperarios = {};
 
 // Función para cambiar entre vista de tabla y cards
 function toggleView() {
@@ -239,28 +239,38 @@ function inicializarFormularioCarga() {
 }
 
 // Función para exportar órdenes (procesamiento de PDF)
-function inicializarExportacionOrdenes() {
+async function inicializarExportacionOrdenes() {
     const exportarBtn = document.getElementById('exportarOrdenes');
     const inputPdf = document.getElementById('inputPdf');
 
-    exportarBtn.addEventListener('click', () => {
-        inputPdf.click();
-    });
+    exportarBtn.addEventListener('click', () => inputPdf.click());
 
     inputPdf.addEventListener('change', async (event) => {
         const file = event.target.files[0];
         if (!file) return;
 
-        // Tomar folios y rondas desde las cards visibles
+        // Tomar folios, rondas y máquina desde las cards visibles
         const cargasVisuales = document.querySelectorAll('.carga-card');
-        const cargas = Array.from(cargasVisuales).map(carga => ({
-            folio: carga.dataset.folio,
-            ronda: parseInt(carga.dataset.ronda) || 1
-        }));
+
+        console.log("Cards encontradas:", cargasVisuales);
+
+        const cargas = Array.from(cargasVisuales).map(carga => {
+            const maquina = carga.dataset.maquina || 'N/A';
+            const operarios = mapaMaquinaOperarios[maquina] || [];
+            console.log("Maquina:", maquina, "Operarios:", operarios);
+            return {
+                folio: carga.dataset.folio,
+                ronda: parseInt(carga.dataset.ronda) || 1,
+                maquina: maquina,
+                operario: operarios.join(', ') || 'N/A'
+            };
+        });
+
+        console.log("Cargas a enviar al backend:", cargas);
 
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('cargas', JSON.stringify(cargas));  // <-- enviamos rondas
+        formData.append('cargas', JSON.stringify(cargas));
 
         try {
             const res = await fetch("http://localhost:5003/procesar_pdf", {

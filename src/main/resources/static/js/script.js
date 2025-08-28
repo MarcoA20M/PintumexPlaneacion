@@ -236,13 +236,11 @@ async function cargarProductoPorCodigo() {
 }
 
 
-// ====== Funciones de Renderizado y Almacenamiento ======
 
 async function renderizarTabla() {
     tabla.innerHTML = '';
     const encabezados = ['Máquina', 'Ronda 1', 'Ronda 2', 'Ronda 3', 'Ronda 4'];
 
-    // Renderizar encabezados
     encabezados.forEach(encabezado => {
         const div = document.createElement('div');
         div.className = 'encabezado';
@@ -259,21 +257,22 @@ async function renderizarTabla() {
         const [anio, semana] = getWeekNumber(hoy);
 
         try {
-            // Llamada al backend con parámetros codificados
             const response = await fetch(`/api/rotacion/personal?maquina=${encodeURIComponent(maquina)}&semana=${semana}&anio=${anio}`);
 
+            let operarios = [];
             if (response.ok) {
-                const operarios = await response.json();
+                operarios = await response.json();
                 console.log("Operarios recibidos para", maquina, ":", operarios);
-
-                maquinaDiv.innerHTML = `
-                    <div class="maquina-nombre">${maquina}</div>
-                    <div class="nombre-operarios">${operarios.join(', ')}</div>
-                `;
             } else {
-                maquinaDiv.textContent = maquina;
                 console.error("Error al obtener operarios:", response.status, response.statusText);
             }
+
+            mapaMaquinaOperarios[maquina] = operarios;
+
+            maquinaDiv.innerHTML = `
+                <div class="maquina-nombre">${maquina}</div>
+                <div class="nombre-operarios">${operarios.join(', ')}</div>
+            `;
         } catch (error) {
             console.error('Error obteniendo operarios:', error);
             maquinaDiv.textContent = maquina;
@@ -306,8 +305,8 @@ async function renderizarTabla() {
                 card.dataset.litrosEnvase = c.litros_envase || 0;
                 card.dataset.medios = c.medios || 0;
                 card.dataset.numeroBase = c.numero_base || '';
+                card.dataset.operario = mapaMaquinaOperarios[maquina][0] || 'N/A'; // <-- asignamos operario aquí
 
-                // Distribución litros
                 let detailsArray = [];
                 if (c.cubetas > 0) detailsArray.push(`19 - ${c.cubetas}`);
                 if (c.galones > 0) detailsArray.push(`4 - ${c.galones}`);
@@ -328,7 +327,6 @@ async function renderizarTabla() {
                     </div>
                 `;
 
-                // Abrir modal al hacer clic
                 card.addEventListener('click', (e) => {
                     e.stopPropagation();
                     abrirModalVinilica(card);
@@ -341,14 +339,12 @@ async function renderizarTabla() {
         }
     }
 
-    // Inicializar drag & drop si existe
     if (typeof habilitarDragAndDrop === 'function') {
         habilitarDragAndDrop();
     } else {
         console.warn("La función 'habilitarDragAndDrop' no está definida.");
     }
 }
-
 
 
 // ... (código anterior sin cambios)
