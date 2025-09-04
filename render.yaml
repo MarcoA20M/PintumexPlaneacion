@@ -3,16 +3,13 @@ services:
     name: pintumex-api
     env: docker
     plan: free
-    region: oregon
     dockerfilePath: ./Dockerfile
     envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
       - key: SPRING_DATASOURCE_URL
-        value: jdbc:mysql://hostname:3306/dbname
+        fromSecret: SPRING_DATASOURCE_URL
       - key: SPRING_DATASOURCE_USERNAME
-        value: user
+        fromSecret: SPRING_DATASOURCE_USERNAME
       - key: SPRING_DATASOURCE_PASSWORD
-        value: password
-      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
-        value: update
-      - key: SPRING_JPA_SHOW_SQL
-        value: "true"
+        fromSecret: SPRING_DATASOURCE_PASSWORD
