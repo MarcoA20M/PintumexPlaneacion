@@ -1,5 +1,7 @@
 package com.pintumex.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -9,10 +11,11 @@ public class ProductoEnvase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    @ManyToOne
+ @ManyToOne
     @JoinColumn(name = "producto_id")
+    @JsonIgnoreProperties("envasesDisponibles") // ← IMPORTANTE para evitar ciclos
     private ProductoPintura producto;
+
 
     @ManyToOne
     @JoinColumn(name = "envase_id")

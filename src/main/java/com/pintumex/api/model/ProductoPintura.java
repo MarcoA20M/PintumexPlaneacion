@@ -2,6 +2,7 @@ package com.pintumex.api.model;
 
 import jakarta.persistence.*;
 import java.util.Set;
+import java.util.List;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -28,7 +29,7 @@ public class ProductoPintura {
 
     @ManyToOne
     @JoinColumn(name = "idCategoria")
-    @JsonIgnoreProperties("productos")  // evita ciclos
+    @JsonIgnoreProperties("productos")
     private CategoriaPintura categoria;
 
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -36,6 +37,11 @@ public class ProductoPintura {
 
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ProductoMateria> productosMaterias;
+
+    // ✅ AÑADE ESTA RELACIÓN - ES LO ÚNICO QUE FALTABA
+    @OneToMany(mappedBy = "producto", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("producto") // Evita recursividad
+    private List<ProductoEnvase> envasesDisponibles;
 
     public ProductoPintura() {}
 
@@ -101,5 +107,13 @@ public class ProductoPintura {
 
     public void setProductosMaterias(Set<ProductoMateria> productosMaterias) {
         this.productosMaterias = productosMaterias;
+    }
+
+     public List<ProductoEnvase> getEnvasesDisponibles() {
+        return envasesDisponibles;
+    }
+
+    public void setEnvasesDisponibles(List<ProductoEnvase> envasesDisponibles) {
+        this.envasesDisponibles = envasesDisponibles;
     }
 }
