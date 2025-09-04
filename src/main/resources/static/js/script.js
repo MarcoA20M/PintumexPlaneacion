@@ -1,3 +1,4 @@
+// ====== CONFIGURACIÓN DE API ======
 const API_BASE_URL = 'https://pintumexplaneacion-1.onrender.com';
 // const API_BASE_URL = 'http://localhost:8080'; // Para desarrollo local
 
@@ -724,7 +725,7 @@ function mostrarCargasEnModal() {
                 `;
             } else {
                 row.innerHTML = `
-                    <td>${carga.folio}</td>
+                   <td>${carga.folio}</td>
                     <td>${carga.codigoPintura}</td>
                     <td>${carga.tipo}</td>
                     <td>${carga.totalLitros.toFixed(2)} L</td>
@@ -1064,7 +1065,7 @@ function obtenerDatosCargaDesdeCard(card) {
 // Función para obtener la descripción del producto
 async function obtenerDescripcionProducto(codigo) {
     try {
-        const response = await fetch(`/api/productos/codigo/${encodeURIComponent(codigo)}`);
+        const response = await fetch(`${API_BASE_URL}/api/productos/codigo/${encodeURIComponent(codigo)}`);
         if (response.ok) {
             const producto = await response.json();
             return producto.descripcion || 'Descripción no disponible';
