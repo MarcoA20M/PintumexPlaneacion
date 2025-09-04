@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/debug")
@@ -14,27 +15,36 @@ public class DebugController {
     @Autowired
     private JdbcTemplate jdbcTemplate;
     
-    @GetMapping("/check-db-structure")
-    public String checkDBStructure() {
+    @GetMapping("/check-envasados")
+    public List<Map<String, Object>> checkEnvasados() {
         try {
-            List<String> tables = jdbcTemplate.queryForList(
-                "SHOW TABLES", String.class);
-            
-            return "Tablas en BD: " + tables.toString();
+            return jdbcTemplate.queryForList("SELECT * FROM producto_envase LIMIT 5");
         } catch (Exception e) {
-            return "Error: " + e.getMessage();
+            return List.of(Map.of("error", e.getMessage()));
         }
     }
     
-    @GetMapping("/check-envasados")
-    public String checkEnvasados() {
+    @GetMapping("/check-envases")
+    public List<Map<String, Object>> checkEnvases() {
         try {
-            List<String> result = jdbcTemplate.queryForList(
-                "SELECT * FROM producto_envase LIMIT 5", String.class);
-            
-            return "Datos en producto_envase: " + result.toString();
+            return jdbcTemplate.queryForList("SELECT * FROM envases LIMIT 5");
         } catch (Exception e) {
-            return "Error en producto_envase: " + e.getMessage();
+            return List.of(Map.of("error", e.getMessage()));
+        }
+    }
+    
+    @GetMapping("/check-relation")
+    public List<Map<String, Object>> checkRelation() {
+        try {
+            return jdbcTemplate.queryForList(
+                "SELECT p.descripcion, e.tipo, e.capacidad, pe.cantidad_disponible " +
+                "FROM producto_envase pe " +
+                "INNER JOIN productos_pintura p ON pe.producto_id = p.idProductos " +
+                "INNER JOIN envases e ON pe.envase_id = e.id " +
+                "LIMIT 5"
+            );
+        } catch (Exception e) {
+            return List.of(Map.of("error", e.getMessage()));
         }
     }
 }
