@@ -1,33 +1,12 @@
-FROM eclipse-temurin:21-jdk-alpine
+# Usa Maven para construir el JAR
+FROM eclipse-temurin:17-jdk-alpine AS builder
 WORKDIR /app
-
-# Copiamos primero los archivos de Maven Wrapper para cachear dependencias
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
-
-# Descargamos dependencias (esto aprovecha cache)
-RUN ./mvnw dependency:go-offline
-
-# Copiamos el resto del código
-COPY src src
-
-# Compilamos la aplicación
+COPY . .
 RUN ./mvnw clean package -DskipTests
 
-# Ejecutamos la app
-CMD ["java", "-jar", "target/pintumex-api-0.0.1-SNAPSHOT.jar"]
-# Usa una imagen base de Java
+# Copia solo el JAR construido
 FROM eclipse-temurin:17-jdk-alpine
-
-# Directorio de trabajo
 WORKDIR /app
-
-# Copia el archivo JAR (ajusta el nombre según tu proyecto)
-COPY target/tu-backend-0.0.1-SNAPSHOT.jar app.jar
-
-# Puerto expuesto
+COPY --from=builder /app/target/pintumex-api-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 5000
-
-# Comando de ejecución
 ENTRYPOINT ["java", "-jar", "app.jar"]
