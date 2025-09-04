@@ -1,0 +1,248 @@
+ /* --- Variables de colores y estilos --- */
+        :root {
+            --primary-color: #3f51b5; /* Azul índigo principal */
+            --primary-color-dark: #303f9f;
+            --primary-color-light: #e8f0fe;
+            --secondary-color: #ff9800; /* Naranja para detalles */
+            --accent-color: #4caf50; /* Verde para éxito/notificaciones */
+            --bg-color-light: #f4f7f9; /* Fondo claro y suave */
+            --text-color-dark: #2c3e50;
+            --text-color-light: #fff;
+            --border-color: #e0e6ec;
+            --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada */
+            --card-hover-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); /* Sombra aún más fuerte al pasar el mouse */
+        }
+
+        /* --- Estilos Base --- */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color-light);
+            color: var(--text-color-dark);
+        }
+
+        header {
+            background-image: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 30px auto;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 150px repeat(5, 1fr);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: white;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .header-cell, .data-cell {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .header-cell:last-child, .data-cell:last-child {
+            border-right: none;
+        }
+
+        .header-cell {
+            background-color: var(--primary-color-dark);
+            color: var(--text-color-light);
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .row-header {
+            background-color: var(--primary-color-light);
+            color: var(--text-color-dark);
+            font-weight: bold;
+            font-size: 0.95rem;
+            justify-content: center;
+            padding-left: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .grid-container .data-cell:nth-last-child(-n+5), .grid-container .row-header:last-of-type {
+            border-bottom: none;
+        }
+
+        /* --- Estilos de la tarjeta de carga actualizados --- */
+        .carga-card {
+            background: linear-gradient(145deg, #ffffff 0%, #f0f5fa 100%);
+            border: 1px solid var(--border-color);
+            border-left: 8px solid var(--primary-color);
+            padding: 6px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            cursor: grab;
+            position: relative;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-color-dark);
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease-out;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            text-align: left;
+            min-width: 170px;
+            width: 100%;
+        }
+
+        
+
+        .carga-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-hover-shadow);
+            border-left-color: var(--primary-color-dark);
+        }
+
+        .carga-card .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 5px;
+            position: relative;
+        }
+
+        .carga-card .main-code {
+            font-size: 1.1em;
+            font-weight: 800;
+            color: var(--primary-color-dark);
+            flex-grow: 1;
+            line-height: 1.2;
+            padding-right: 60px;
+        }
+
+        .litros-total-circulo {
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            background-color: var(--secondary-color);
+            color: var(--text-color-light);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 5px;
+            border: 4px solid var(--text-color-light);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            z-index: 10;
+            line-height: 1.2;
+            text-align: center;
+            transition: all 0.3s ease-out;
+        }
+
+        .carga-card:hover .litros-total-circulo {
+            transform: scale(1.1);
+            background-color: var(--primary-color);
+        }
+        
+        .distribution-details-new {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 5px;
+            padding-top: 8px;
+            border-top: 1px dashed #cfd8dc;
+            font-size: 0.85em;
+            color: #555;
+        }
+
+        .distribution-details-new span {
+            background-color: var(--primary-color-light);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            color: var(--primary-color-dark);
+            white-space: nowrap;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .no-data, .loading {
+            text-align: center;
+            font-size: 1.2rem;
+            padding: 40px 0;
+            color: #7f8c8d;
+        }
+
+        /* Media Queries para responsividad */
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+            .header-cell {
+                display: none; /* Oculta los encabezados en pantallas pequeñas si no se necesita */
+            }
+            .row-header {
+                font-size: 1.2rem;
+                padding: 10px;
+                border-bottom: 2px solid var(--primary-color-dark);
+            }
+            .data-cell {
+                justify-content: flex-start;
+                align-items: flex-start;
+                padding: 10px;
+            }
+        }
+
+
+        #controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ccc;
+}
+
+#controls button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#controls button:hover {
+    background-color: #0056b3;
+}
+
+#controls input[type="date"] {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}

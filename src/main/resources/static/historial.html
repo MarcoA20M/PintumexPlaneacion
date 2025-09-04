@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Historial de Cargas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/stylesHistorial.css">
+    <style>
+        /* Estilos para el modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: auto;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: modalopen 0.3s;
+        }
+
+        @keyframes modalopen {
+            from {opacity: 0; transform: translateY(-50px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .close-button {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close-button:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 20px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        /* Estilos para los detalles de la carga */
+        .vinilica-details {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .detail-row {
+            display: flex;
+            border-bottom: 1px solid #eee;
+            padding: 8px 0;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            min-width: 120px;
+            color: #555;
+        }
+
+        .detail-value {
+            flex: 1;
+        }
+        
+        /* Estilos para las cards clickeables */
+        .carga-card {
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .carga-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        Historial de Cargas
+    </header>
+
+    <div id="controls">
+        <button onclick="window.history.back()">Regresar</button>
+        <input type="date" id="fechaInput">
+    </div>
+
+    <div class="container">
+        <div id="grid-container" class="grid-container" style="display:none;">
+            <div class="header-cell">Máquina</div>
+            <div class="header-cell">Ronda 1</div>
+            <div class="header-cell">Ronda 2</div>
+            <div class="header-cell">Ronda 3</div>
+            <div class="header-cell">Ronda 4</div>
+            <div class="header-cell">Ronda 5</div>
+        </div>
+        <div id="noData" class="no-data" style="display:none;">No hay datos para esta fecha.</div>
+        <div id="loading" class="loading" style="display:none;">Cargando...</div>
+    </div>
+
+    <!-- Modal para visualizar información de carga -->
+    <div id="modalCarga" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Detalles de la Carga</h2>
+                <span class="close-button" id="closeModalCarga">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="vinilica-details">
+                    <div class="detail-row">
+                        <div class="detail-label">Folio:</div>
+                        <div class="detail-value" id="modalFolio"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Código:</div>
+                        <div class="detail-value" id="modalCodigo"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Descripción:</div>
+                        <div class="detail-value" id="modalDescripcion"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Base:</div>
+                        <div class="detail-value" id="modalBase"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Máquina:</div>
+                        <div class="detail-value" id="modalMaquina"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Ronda:</div>
+                        <div class="detail-value" id="modalRonda"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Total de Litros:</div>
+                        <div class="detail-value" id="modalLitros"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Distribución:</div>
+                        <div class="detail-value" id="modalDistribucion"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Fecha:</div>
+                        <div class="detail-value" id="modalFecha"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="button-secondary" onclick="cerrarModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const maquinas = [
+            "VI-101", "VI-102", "VI-103", "VI-104", 
+            "VI-105", "VI-106", "VI-107", "VI-108"
+        ];
+
+        // Función para obtener la fecha de hoy en formato YYYY-MM-DD
+        function getTodayDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Función para abrir el modal con los detalles de la carga
+        function abrirModalCarga(carga) {
+            const modal = document.getElementById('modalCarga');
+            
+            // Llenar el modal con los datos
+            document.getElementById('modalFolio').textContent = carga.folio || 'N/A';
+            document.getElementById('modalCodigo').textContent = carga.codigoPintura || 'N/A';
+            document.getElementById('modalBase').textContent = carga.numeroBase || 'N/A';
+            document.getElementById('modalMaquina').textContent = carga.maquinaAsignada || 'N/A';
+            document.getElementById('modalRonda').textContent = carga.rondaAsignada || 'N/A';
+            document.getElementById('modalLitros').textContent = `${carga.totalLitros || 0} L`;
+            document.getElementById('modalFecha').textContent = carga.fecha || 'N/A';
+            
+            // Generar texto de distribución
+            const cubetas = carga.cubetas || 0;
+            const galones = carga.galones || 0;
+            const litrosEnvase = carga.litrosEnvase || 0;
+            const medios = carga.medios || 0;
+            
+            const partes = [];
+            if (cubetas > 0) partes.push(`${cubetas} cubeta(s) de 19L`);
+            if (galones > 0) partes.push(`${galones} galón(es) de 4L`);
+            if (litrosEnvase > 0) partes.push(`${litrosEnvase} litro(s)`);
+            if (medios > 0) partes.push(`${medios} medio(s) de 0.5L`);
+            
+            document.getElementById('modalDistribucion').textContent = 
+                partes.length > 0 ? partes.join(', ') : 'Sin distribución específica';
+            
+            // Obtener descripción del producto
+            obtenerDescripcionProducto(carga.codigoPintura).then(descripcion => {
+                document.getElementById('modalDescripcion').textContent = descripcion;
+            });
+            
+            // Mostrar el modal
+            modal.style.display = 'flex';
+        }
+
+        // Función para cerrar el modal
+        function cerrarModal() {
+            document.getElementById('modalCarga').style.display = 'none';
+        }
+
+        // Función para obtener la descripción del producto
+        async function obtenerDescripcionProducto(codigo) {
+            if (!codigo) return 'Descripción no disponible';
+            
+            try {
+                const response = await fetch(`/api/productos/codigo/${encodeURIComponent(codigo)}`);
+                if (response.ok) {
+                    const producto = await response.json();
+                    return producto.descripcion || 'Descripción no disponible';
+                }
+                return 'Descripción no disponible';
+            } catch (error) {
+                console.error('Error al obtener descripción:', error);
+                return 'Descripción no disponible';
+            }
+        }
+
+        async function cargarHistorial() {
+            const params = new URLSearchParams(window.location.search);
+            const fechaUrl = params.get("fecha");
+            const fechaInput = document.getElementById("fechaInput");
+            const gridContainer = document.getElementById("grid-container");
+            const noData = document.getElementById("noData");
+            const loading = document.getElementById("loading");
+
+            // Establece el valor del input de fecha
+            if (fechaUrl) {
+                fechaInput.value = fechaUrl;
+            } else {
+                fechaInput.value = getTodayDate();
+            }
+
+            const fecha = fechaInput.value;
+
+            // Agrega un listener para recargar la página cuando la fecha cambie
+            fechaInput.addEventListener('change', (event) => {
+                const nuevaFecha = event.target.value;
+                window.location.href = `?fecha=${nuevaFecha}`;
+            });
+
+            if (!fecha) {
+                noData.style.display = "block";
+                return;
+            }
+
+            loading.style.display = "block";
+            gridContainer.innerHTML = `
+                <div class="header-cell">Máquina</div>
+                <div class="header-cell">Ronda 1</div>
+                <div class="header-cell">Ronda 2</div>
+                <div class="header-cell">Ronda 3</div>
+                <div class="header-cell">Ronda 4</div>
+                <div class="header-cell">Ronda 5</div>
+            `;
+
+            try {
+                const response = await fetch(`http://localhost:8080/api/cargas/fecha?fecha=${fecha}`);
+                const cargas = await response.json();
+
+                if (!cargas || cargas.length === 0) {
+                    noData.style.display = "block";
+                    gridContainer.style.display = "none";
+                } else {
+                    gridContainer.style.display = "grid";
+                    
+                    const groupedCargas = {};
+                    maquinas.forEach(maquina => {
+                        groupedCargas[maquina] = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+                    });
+
+                    cargas.forEach(carga => {
+                        const maquina = carga.maquinaAsignada;
+                        let ronda = parseInt(carga.rondaAsignada, 10);
+                        if (isNaN(ronda) || ronda < 1 || ronda > 5) ronda = 1;
+
+                        if (groupedCargas[maquina] && groupedCargas[maquina][ronda]) {
+                            groupedCargas[maquina][ronda].push(carga);
+                        }
+                    });
+
+                    maquinas.forEach(maquina => {
+                        const rowHeader = document.createElement("div");
+                        rowHeader.classList.add("row-header", "data-cell");
+                        rowHeader.textContent = maquina;
+                        gridContainer.appendChild(rowHeader);
+
+                        for (let i = 1; i <= 5; i++) {
+                            const cell = document.createElement("div");
+                            cell.classList.add("data-cell");
+
+                            const cargasInCell = groupedCargas[maquina][i];
+                            if (cargasInCell.length > 0) {
+                                cargasInCell.forEach(carga => {
+                                    let envaseText = "N/A";
+                                    if (carga.cubetas > 0) {
+                                        envaseText = `19 - ${carga.cubetas}`;
+                                    } else if (carga.galones > 0) {
+                                        envaseText = `4 - ${carga.galones}`;
+                                    } else if (carga.litrosEnvase > 0) {
+                                        envaseText = `18 - ${carga.litrosEnvase}`;
+                                    } else if (carga.medios > 0) {
+                                        envaseText = `8 - ${carga.medios}`;
+                                    }
+
+                                    const card = document.createElement("div");
+                                    card.classList.add("carga-card");
+                                    card.innerHTML = `
+                                        <div class="header-content">
+                                            <div class="main-code">${carga.codigoPintura || "N/A"}</div>
+                                            <div class="litros-total-circulo">
+                                                <span>${(carga.totalLitros || 0).toFixed(0)} L</span>
+                                            </div>
+                                        </div>
+                                        <div class="distribution-details-new">
+                                            <span>Folio: ${carga.folio || "N/A"}</span>
+                                            <span>Envasado: ${envaseText}</span>
+                                        </div>
+                                    `;
+                                    
+                                    // Agregar event listener para abrir el modal
+                                    card.addEventListener('click', () => {
+                                        abrirModalCarga(carga);
+                                    });
+                                    
+                                    cell.appendChild(card);
+                                });
+                            }
+                            gridContainer.appendChild(cell);
+                        }
+                    });
+                }
+            } catch (err) {
+                noData.textContent = "Error cargando los datos.";
+                noData.style.display = "block";
+                console.error(err);
+            } finally {
+                loading.style.display = "none";
+            }
+        }
+
+        // Lógica para cerrar el modal
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cerrar modal al hacer clic en la X
+            const closeModalBtn = document.getElementById('closeModalCarga');
+            if (closeModalBtn) {
+                closeModalBtn.addEventListener('click', cerrarModal);
+            }
+            
+            // Cerrar modal al hacer clic fuera del contenido
+            const modal = document.getElementById('modalCarga');
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        cerrarModal();
+                    }
+                });
+            }
+            
+            // Cerrar con la tecla Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    cerrarModal();
+                }
+            });
+            
+            // Cargar el historial
+            cargarHistorial();
+        });
+    </script>
+</body>
+</html>

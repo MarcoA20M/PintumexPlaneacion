@@ -19,19 +19,11 @@ public class RotacionController {
     @Autowired
     private RotacionService rotacionService;
 
-    // Ejemplo: GET /api/rotacion/personal?maquina=VI-101&semana=32&año=2025
     @GetMapping("/personal")
-    public ResponseEntity<List<String>> obtenerPersonalAsignado(
+    public List<String> getPersonal(
             @RequestParam String maquina,
-            @RequestParam Integer semana,
-            @RequestParam Integer año) {
-        
-        List<Personal> personalAsignado = rotacionService.obtenerPersonalPorMaquinaSemana(maquina, semana, año);
-        // Solo devolver los nombres para simplicidad
-        List<String> nombres = personalAsignado.stream()
-                                              .map(Personal::getNombre)
-                                              .toList();
-
-        return ResponseEntity.ok(nombres);
+            @RequestParam int semana,
+            @RequestParam int anio) {
+        return rotacionService.obtenerOperariosPorMaquina(maquina, semana);
     }
 }

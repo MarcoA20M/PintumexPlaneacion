@@ -1,7 +1,6 @@
 package com.pintumex.api.model;
 
 import java.util.Objects;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -30,6 +29,9 @@ public class Carga {
     @Column(name = "prioridad", nullable = false)
     private Integer prioridad;
 
+    @Column(name = "numero_base") // <-- Nuevo campo para el número de base
+    private Integer numeroBase;
+
     @Column(name = "litros", nullable = false)
     private Double litros;
 
@@ -49,18 +51,14 @@ public class Carga {
     public Carga() {
     }
 
-    // Constructor con todos los campos excepto idCarga
-    public Carga(String codigo, String descripcion, String categoria, Integer prioridad, Double litros,
-                 String maquinaCodigo, Integer ronda, Integer semana, Integer anio) {
+    // Constructor con todos los campos excepto idCarga y maquina_codigo, ronda, semana, anio
+    public Carga(String codigo, String descripcion, String categoria, Integer prioridad, Integer numeroBase, Double litros) {
         this.codigo = codigo;
         this.descripcion = descripcion;
         this.categoria = categoria;
         this.prioridad = prioridad;
+        this.numeroBase = numeroBase;
         this.litros = litros;
-        this.maquinaCodigo = maquinaCodigo;
-        this.ronda = ronda;
-        this.semana = semana;
-        this.anio = anio;
     }
 
     // Getters y setters
@@ -103,6 +101,15 @@ public class Carga {
 
     public void setPrioridad(Integer prioridad) {
         this.prioridad = prioridad;
+    }
+    
+    // Nuevo getter y setter para numeroBase
+    public Integer getNumeroBase() {
+        return numeroBase;
+    }
+
+    public void setNumeroBase(Integer numeroBase) {
+        this.numeroBase = numeroBase;
     }
 
     public Double getLitros() {
@@ -161,7 +168,6 @@ public class Carga {
     }
 
     // toString para debug
-
     @Override
     public String toString() {
         return "Carga{" +
@@ -170,6 +176,7 @@ public class Carga {
                 ", descripcion='" + descripcion + '\'' +
                 ", categoria='" + categoria + '\'' +
                 ", prioridad=" + prioridad +
+                ", numeroBase=" + numeroBase + // <-- Incluimos numeroBase en toString
                 ", litros=" + litros +
                 ", maquinaCodigo='" + maquinaCodigo + '\'' +
                 ", ronda=" + ronda +

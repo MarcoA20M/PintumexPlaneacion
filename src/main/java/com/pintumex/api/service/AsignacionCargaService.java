@@ -4,9 +4,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.springframework.stereotype.Service;
-
 import com.pintumex.api.model.Carga;
 
 @Service
@@ -26,12 +24,18 @@ public class AsignacionCargaService {
 
     /**
      * Método principal para asignar cargas a máquinas y rondas
+     *
+     * @param cargasSinAsignar La lista de cargas a asignar.
+     * @param rondasTotales    El número total de rondas disponibles.
+     * @return La lista de cargas con las asignaciones de máquina y ronda actualizadas.
      */
     public List<Carga> asignarCargas(List<Carga> cargasSinAsignar, int rondasTotales) {
-        // Primero ordenar cargas por prioridad (asc) y litros (desc)
-        cargasSinAsignar.sort(Comparator.comparingInt(Carga::getPrioridad).thenComparing(Comparator.comparingDouble(Carga::getLitros).reversed()));
+        // Ordenar cargas: 1. Prioridad (asc), 2. NumeroBase (asc), 3. Litros (desc)
+        cargasSinAsignar.sort(Comparator.comparingInt(Carga::getPrioridad)
+            .thenComparingInt(Carga::getNumeroBase)
+            .thenComparing(Comparator.comparingDouble(Carga::getLitros).reversed()));
 
-        // Estado para controlar litros asignados por maquina y ronda
+        // Estado para controlar litros asignados por máquina y ronda
         Map<String, Map<Integer, Double>> litrosAsignados = new HashMap<>();
         for (String maquina : CAPACIDADES.keySet()) {
             Map<Integer, Double> rondasMap = new HashMap<>();
@@ -41,9 +45,10 @@ public class AsignacionCargaService {
             litrosAsignados.put(maquina, rondasMap);
         }
 
+        // Proceso de asignación
         for (Carga carga : cargasSinAsignar) {
             boolean asignada = false;
-            // Intentar asignar empezando por ronda 1
+            // Intenta asignar empezando por la ronda 1
             for (int ronda = 1; ronda <= rondasTotales && !asignada; ronda++) {
                 // Priorizar máquinas grandes para cargas grandes y categorías específicas
                 List<String> maquinasOrdenadas = ordenarMaquinasSegunCategoria(carga.getCategoria());
@@ -51,7 +56,8 @@ public class AsignacionCargaService {
                 for (String maquina : maquinasOrdenadas) {
                     double capacidad = CAPACIDADES.get(maquina);
                     double litrosEnRonda = litrosAsignados.get(maquina).get(ronda);
-                    // Si cabe la carga en esa máquina y ronda
+                    
+                    // Si la carga cabe en esa máquina y ronda
                     if (litrosEnRonda + carga.getLitros() <= capacidad) {
                         // Reglas especiales para "Directos" en máquinas grandes
                         if (categoriaEsDirectos(carga.getCategoria()) && (maquina.equals("VI-108") || maquina.equals("VI-104"))) {
@@ -62,7 +68,7 @@ public class AsignacionCargaService {
                             }
                         }
 
-                        // Asignamos
+                        // Asignar la carga
                         carga.setMaquinaCodigo(maquina);
                         carga.setRonda(ronda);
                         litrosAsignados.get(maquina).put(ronda, litrosEnRonda + carga.getLitros());
@@ -72,7 +78,7 @@ public class AsignacionCargaService {
                 }
             }
             if (!asignada) {
-                // No cabe en ninguna máquina, podrias lanzar excepción o asignar a una cola de espera
+                // Si no cabe en ninguna máquina, marcar como no asignada
                 carga.setMaquinaCodigo("NO_ASIGNADO");
                 carga.setRonda(0);
             }
@@ -82,7 +88,7 @@ public class AsignacionCargaService {
     }
 
     private List<String> ordenarMaquinasSegunCategoria(String categoria) {
-        // Prioriza máquinas grandes si categoría es Directos, sino orden natural
+        // Prioriza máquinas grandes si la categoría es Directos, si no, orden natural
         if (categoriaEsDirectos(categoria)) {
             return List.of("VI-108", "VI-104", "VI-107", "VI-101", "VI-102", "VI-103", "VI-105", "VI-106");
         }
@@ -94,11 +100,8 @@ public class AsignacionCargaService {
     }
 
     private boolean hayCargaTransparenteEnMaquinaRonda(Map<String, Map<Integer, Double>> litrosAsignados, String maquina, int ronda) {
-        // Aquí implementar lógica para saber si hay carga de categoría transparente ya asignada.
-        // Para simplicidad asumiremos que si hay litros asignados > 0 para ese máquina y ronda, y 
-        // la carga es transparente en esta máquina y ronda.
-        // En implementación real debes llevar control detallado.
-        // Por ahora retornamos falso para que no bloquee
+        // Aquí se implementaría la lógica para saber si ya hay una carga transparente en esa ronda
+        // Por ahora, el método devuelve 'false'.
         return false;
     }
 }
