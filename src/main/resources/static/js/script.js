@@ -1,3 +1,6 @@
+const API_BASE_URL = 'https://pintumexplaneacion-1.onrender.com';
+// const API_BASE_URL = 'http://localhost:8080'; // Para desarrollo local
+
 // ====== Configuración inicial ======
 const categoriasPrioridad = {
     // Categorías de Vinílicas
@@ -121,9 +124,9 @@ async function buscarProductoPorCodigo(codigo) {
     let endpoint = '';
 
     if (modoActivo === 'esmalte') {
-        endpoint = `/api/esmaltes/codigo/${encodeURIComponent(codigo)}`;
+        endpoint = `${API_BASE_URL}/api/esmaltes/codigo/${encodeURIComponent(codigo)}`;
     } else {
-        endpoint = `/api/productos/codigo/${encodeURIComponent(codigo)}`;
+        endpoint = `${API_BASE_URL}/api/productos/codigo/${encodeURIComponent(codigo)}`;
     }
 
     try {
@@ -209,7 +212,7 @@ async function renderizarTabla() {
         const [anio, semana] = getWeekNumber(hoy);
 
         try {
-            const response = await fetch(`/api/rotacion/personal?maquina=${encodeURIComponent(maquina)}&semana=${semana}&anio=${anio}`);
+            const response = await fetch(`${API_BASE_URL}/api/rotacion/personal?maquina=${encodeURIComponent(maquina)}&semana=${semana}&anio=${anio}`);
 
             let operarios = [];
             if (response.ok) {
