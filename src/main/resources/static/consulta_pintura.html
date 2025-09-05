@@ -65,25 +65,6 @@
         .hidden {
             display: none;
         }
-
-        .envases-container {
-            margin-top: 15px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            display: none;
-        }
-
-        .envase-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .envase-item:last-child {
-            border-bottom: none;
-        }
     </style>
 </head>
 <body>
@@ -102,12 +83,6 @@
                 <div class="input-group">
                     <label for="codigo">Código de Pintura</label>
                     <input type="text" id="codigo" required />
-                </div>
-
-                <!-- SECCIÓN DE ENVASES DISPONIBLES -->
-                <div id="envasesDisponiblesContainer" class="envases-container">
-                    <h4>Envases Disponibles</h4>
-                    <div id="envasesList"></div>
                 </div>
 
                 <fieldset>
@@ -156,8 +131,8 @@
             <div id="infoProducto" class="info-box card" style="display:none;">
                 <h3>Información del Producto</h3>
                 <div class="product-info-line">
-                    <p><strong>Descripcion:</strong> <span id="descProducto"></span></p>
-                    <p><strong>Categoria:</strong> <span id="categoriaProducto"></span></p>
+                    <p><strong>Descripción:</strong> <span id="descProducto"></span></p>
+                    <p><strong>Categoría:</strong> <span id="categoriaProducto"></span></p>
                     <p><strong>Prioridad:</strong> <span id="prioridadProducto"></span></p>
                 </div>
             </div>
@@ -336,252 +311,99 @@
 </div>
 <input type="file" id="inputPdf" accept=".pdf" style="display:none;">
 
+<script src="js/generar-ordenes.js"></script>
+<script src="js/script.js"></script>
+<script src="js/esmalte-menu.js"></script>
 <script>
-// ====== CONFIGURACIÓN DE API ======
-const API_BASE_URL = 'https://pintumexplaneacion-1.onrender.com';
+    document.addEventListener('DOMContentLoaded', function() {
+        const exportButton = document.getElementById('exportarVinilicas');
+        const pythonServiceUrl = 'http://localhost:5000/generate-report'; 
 
-// ====== Configuración inicial ======
-const categoriasPrioridad = {
-    "Transparentes": 1, "Basicos": 2, "Basicos 1": 3, "Basicos 2": 4, "Unica": 5, "Base Nueva": 6, "Intensos 1": 7,
-    "Intensos": 8, "Intensos 2": 9, "Medios": 10, "Pastel": 11, "Tonos": 12, "Pastel 1": 13, "Pastel 2": 14,
-    "Blancos": 15, "Directos": 16,
-    "Esmalux SR": 1, "DryLux SR": 2, "Automotive": 3, "Base Transparente": 4, "Base Blanca": 5, "Base Pastel": 6,
-    "Base Media": 7, "Base Intensa": 8, "Igualacion": 9
-};
+        const originalText = exportButton.innerHTML;
+        const spinner = exportButton.querySelector('.loading-spinner');
 
-const capacidadesMaquinas = {
-    "VI-101": 850, "VI-102": 850, "VI-103": 850, "VI-104": 2400, "VI-105": 850, "VI-106": 850, "VI-107": 1600,
-    "VI-108": 2400
-};
+        exportButton.addEventListener('click', async function() {
+            spinner.style.display = 'inline-block';
+            exportButton.textContent = 'Generando...';
+            exportButton.disabled = true;
+            exportButton.style.opacity = '0.7';
 
-const maquinas = Object.keys(capacidadesMaquinas);
-const rondasTotales = 4;
-const mapaMaquinaRondas = {};
-let cargasGuardadas = [];
-
-const equipoTerminado = ["Alberto", "Pedro", "Germán"];
-const equipoMoliendaPreparado = ["Aldo", "Gaspar"];
-let indiceTerminado = 0;
-let indiceMoliendaPreparado = 0;
-
-// Inicializar estructura de datos
-maquinas.forEach(m => {
-    mapaMaquinaRondas[m] = {};
-    for (let r = 1; r <= rondasTotales; r++) {
-        mapaMaquinaRondas[m][r] = [];
-    }
-});
-
-// ====== Variables DOM ======
-const codigoInput = document.getElementById('codigo');
-const descSpan = document.getElementById('descProducto');
-const categoriaSpan = document.getElementById('categoriaProducto');
-const prioridadSpan = document.getElementById('prioridadProducto');
-const infoDiv = document.getElementById('infoProducto');
-const mensaje = document.getElementById('mensaje');
-const mediosInput = document.getElementById('medios');
-const litrosInput = document.getElementById('litros');
-const galonesInput = document.getElementById('galones');
-const cubetasInput = document.getElementById('cubetas');
-const tabla = document.getElementById("tablaRondas");
-
-const modeVinilica = document.getElementById('modeVinilica');
-const modeEsmalte = document.getElementById('modeEsmalte');
-const vinilicaSection = document.getElementById('vinilicaMode');
-const esmalteSection = document.getElementById('esmalteMode');
-const formCarga = document.getElementById('formCarga');
-
-const verCargasButton = document.getElementById('verCargas');
-const modalCargas = document.getElementById('modalCargas');
-const closeModalButton = document.getElementById('closeModal');
-const cargasTableBody = document.querySelector('#cargasTable tbody');
-const asignarRondasBtn = document.getElementById('btnAsignarRondas');
-const btnAsignarEsmaltes = document.getElementById('btnAsignarEsmaltes');
-
-const loadingOverlay = document.getElementById('loadingOverlay');
-const envasesContainer = document.getElementById('envasesDisponiblesContainer');
-const envasesList = document.getElementById('envasesList');
-
-// ====== Funciones auxiliares y lógica del negocio ======
-function getWeekNumber(d) {
-    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-    return [d.getUTCFullYear(), weekNo];
-}
-
-function generarFolioBase() {
-    const hoy = new Date();
-    const anio = String(hoy.getFullYear()).slice(-2);
-    const mes = String(hoy.getMonth() + 1).padStart(2, "0");
-    const dia = String(hoy.getDate()).padStart(2, "0");
-    const modo = modeEsmalte.classList.contains('active') ? 'E' : 'V';
-    return `${modo}${anio}${mes}${dia}`;
-}
-
-function generarFolioTemporal() {
-    const hoy = new Date();
-    const anio = String(hoy.getFullYear()).slice(-2);
-    const mes = String(hoy.getMonth() + 1).padStart(2, "0");
-    const dia = String(hoy.getDate()).padStart(2, "0");
-    const marcaTiempo = Date.now();
-    const modo = modeEsmalte.classList.contains('active') ? 'E' : 'V';
-    return `${modo}${anio}${mes}${dia}-${marcaTiempo}`;
-}
-
-function inicializarFolio() {
-    const numCargas = cargasGuardadas.filter(c => c.tipoPintura === (modeEsmalte.classList.contains('active') ? 'esmalte' : 'vinilica')).length + 1;
-    const numero = String(numCargas).padStart(3, "0");
-    const fechaString = generarFolioBase();
-}
-
-function actualizarDistribucion() {
-    const medios = Number(mediosInput.value) || 0;
-    const litros = Number(litrosInput.value) || 0;
-    const galones = Number(galonesInput.value) || 0;
-    const cubetas = Number(cubetasInput.value) || 0;
-    const totalLitros = (medios * 0.5) + litros + (galones * 4) + (cubetas * 19);
-
-    document.getElementById('cantMedios').textContent = medios;
-    document.getElementById('cantLitros').textContent = litros;
-    document.getElementById('cantGalones').textContent = galones;
-    document.getElementById('cantCubetas').textContent = cubetas;
-
-    document.getElementById('litrosMedios').textContent = (medios * 0.5).toFixed(2);
-    document.getElementById('litrosLitros').textContent = litros.toFixed(2);
-    document.getElementById('litrosGalones').textContent = (galones * 4).toFixed(2);
-    document.getElementById('litrosCubetas').textContent = (cubetas * 19).toFixed(2);
-
-    document.getElementById('totalDistribucion').textContent = totalLitros.toFixed(2);
-    document.getElementById('litrosTotalTabla').textContent = totalLitros.toFixed(2);
-    return totalLitros;
-}
-
-async function buscarProductoPorCodigo(codigo) {
-    const modoActivo = modeEsmalte.classList.contains('active') ? 'esmalte' : 'vinilica';
-    let endpoint = '';
-
-    if (modoActivo === 'esmalte') {
-        endpoint = `${API_BASE_URL}/api/esmaltes/codigo/${encodeURIComponent(codigo)}`;
-    } else {
-        endpoint = `${API_BASE_URL}/api/productos/codigo/${encodeURIComponent(codigo)}`;
-    }
-
-    try {
-        const response = await fetch(endpoint);
-        if (!response.ok) {
-            if (response.status === 404) return null;
-            throw new Error(`Error en la búsqueda: ${response.statusText}`);
-        }
-        
-        const producto = await response.json();
-        
-        if (modoActivo === 'esmalte') {
-            return {
-                descripcion: producto.descripcion,
-                tipo: producto.tipo,
-                es_igualacion: producto.es_igualacion,
-                molienda: producto.molienda,
-                preparado: producto.preparado,
-                terminado: producto.terminado,
-                categoria: { 
-                    nombre: producto.tipo,
-                    prioridad: categoriasPrioridad[producto.tipo] || 99
+            try {
+                // Recopilar cargas de vinílicas ya asignadas
+                const cargasVinilicas = [];
+                if (typeof mapaMaquinaRondas !== 'undefined') {
+                    for (const maquina in mapaMaquinaRondas) {
+                        for (const ronda in mapaMaquinaRondas[maquina]) {
+                            mapaMaquinaRondas[maquina][ronda]
+                                .filter(c => c.tipoOrden === 'madre')
+                                .forEach(carga => {
+                                    // Asegurar que los datos estén en el formato correcto
+                                    const envasado = carga.medios !== undefined ? {
+                                        medios: carga.medios,
+                                        litros_envase: carga.litros_envase,
+                                        galones: carga.galones,
+                                        cubetas: carga.cubetas
+                                    } : { medios: 0, litros_envase: 0, galones: 0, cubetas: 0 };
+                                      console.log('Datos de envasado para la carga:', envasado);
+                                    cargasVinilicas.push({
+                                        folio: carga.folio,
+                                        codigoPintura: carga.codigoPintura,
+                                        litrosAsignados: carga.litrosAsignados,
+                                        dispersor: maquina,
+                                        rondaAsignada: ronda,
+                                        ...envasado
+                                    });
+                                });
+                        }
+                    }
                 }
-            };
-        } else { // modo vinilica
-            return {
-                descripcion: producto.descripcion,
-                base: producto.base,
-                numeroBase: producto.numeroBase,
-                categoria: { 
-                    nombre: producto.categoria.nombre,
-                    prioridad: categoriasPrioridad[producto.categoria.nombre] || 99 
-                },
-                envasesDisponibles: producto.envasesDisponibles || []
-            };
-        }
-    } catch (error) {
-        console.error("Error al buscar producto:", error);
-        return null;
-    }
-}
+                
+                // Recopilar cargas de esmaltes
+                // Asume que cargasGuardadas es un array global que almacena las cargas de esmalte
+                const cargasEsmaltes = typeof cargasGuardadas !== 'undefined' ? cargasGuardadas.filter(c => c.tipoPintura === 'esmalte') : [];
 
-function mostrarEnvasesDisponibles(envases) {
-    envasesList.innerHTML = '';
-    
-    if (envases && envases.length > 0) {
-        envasesContainer.style.display = 'block';
-        
-        envases.forEach(envase => {
-            const envaseItem = document.createElement('div');
-            envaseItem.className = 'envase-item';
-            
-            const cantidad = envase.cantidadDisponible !== null ? envase.cantidadDisponible : 'Disponible';
-            envaseItem.innerHTML = `
-                <span>${envase.envase.tipo} (${envase.envase.capacidad}L)</span>
-                <span>${cantidad}</span>
-            `;
-            envasesList.appendChild(envaseItem);
+                // Enviar ambas listas al servidor
+                const response = await fetch(pythonServiceUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        cargas_vinilicas: cargasVinilicas,
+                        cargas_esmaltes: cargasEsmaltes
+                    })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = `Reporte_Produccion_${new Date().toISOString().split('T')[0]}.xlsx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    exportButton.innerHTML = 'Exportado ✔️';
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Error en el servidor: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error('Error al exportar:', error);
+                exportButton.innerHTML = 'Error ❌';
+                alert(`Error: ${error.message}\nVerifica que el servidor Python esté corriendo.`);
+            } finally {
+                spinner.style.display = 'none';
+                exportButton.disabled = false;
+                exportButton.style.opacity = '1';
+                
+                setTimeout(() => {
+                    exportButton.innerHTML = originalText;
+                }, 3000);
+            }
         });
-    } else {
-        envasesContainer.style.display = 'none';
-    }
-}
-
-async function cargarProductoPorCodigo() {
-    const codigo = codigoInput.value.trim();
-    if (!codigo) {
-        infoDiv.style.display = 'none';
-        envasesContainer.style.display = 'none';
-        return null;
-    }
-    const producto = await buscarProductoPorCodigo(codigo);
-    if (producto) {
-        descSpan.textContent = producto.descripcion;
-        categoriaSpan.textContent = producto.categoria.nombre;
-        prioridadSpan.textContent = producto.categoria.prioridad;
-        infoDiv.style.display = 'block';
-        
-        // Mostrar envases disponibles
-        if (producto.envasesDisponibles) {
-            mostrarEnvasesDisponibles(producto.envasesDisponibles);
-        } else {
-            envasesContainer.style.display = 'none';
-        }
-        
-        mensaje.textContent = '';
-        return producto;
-    } else {
-        descSpan.textContent = '';
-        categoriaSpan.textContent = '';
-        prioridadSpan.textContent = '';
-        infoDiv.style.display = 'none';
-        envasesContainer.style.display = 'none';
-        mensaje.style.color = 'red';
-        mensaje.textContent = 'Código no encontrado.';
-        return null;
-    }
-}
-
-// ... (EL RESTO DE TU CÓDIGO ORIGINAL COMPLETO SE MANTIENE IGUAL)
-// [Aquí irían todas las funciones restantes: renderizarTabla, renderizarTablaEsmaltes, 
-//  generarFoliosVinilica, guardarEstado, cargarEstado, cambiarModo, etc.]
-// Solo se cambiaron las URLs para usar API_BASE_URL
-
-// ====== Initialization ======
-window.onload = () => {
-    cargarEstado();
-    inicializarFolio();
-    actualizarDistribucion();
-    if (modeVinilica.classList.contains('active')) {
-        renderizarTabla();
-    } else {
-        cambiarModo('esmalte');
-    }
-};
-
+    });
 </script>
 </body>
 </html>
