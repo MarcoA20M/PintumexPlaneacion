@@ -126,7 +126,7 @@ async function guardarEnBaseDeDatos() {
             });
         });
         console.log('Enviando cargas vinílicas:', cargasAEnviar);
-        const response = await fetch('http://localhost:8080/api/cargas/vinilicas', {
+        const response = await fetch('https://pintumexplaneacion-1.onrender.com/api/cargas/vinilicas', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(cargasAEnviar)
@@ -364,7 +364,7 @@ function inicializarRecomendacionExcel() {
             formData.append('file', file);
 
             try {
-                const res = await fetch('http://localhost:5001/recomendar', { method: 'POST', body: formData });
+                const res = await fetch('https://tu-servicio-python-en-render.com/recomendar', { method: 'POST', body: formData });
                 if (!res.ok) {
                     let errorText = 'Error en el servidor';
                     try { const err = await res.json(); errorText = err.error || errorText; } catch {}
