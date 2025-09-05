@@ -203,7 +203,7 @@ function inicializarFormularioCarga() {
 
         // Lógica original para el modo de pintura vinílica
         try {
-            const response = await fetch(`http://localhost:8080/api/productos/envases/${codigo}`);
+           const response = await fetch(`https://pintumexplaneacion-1.onrender.com/api/productos/envases/${codigo}`);
             if (!response.ok) throw new Error('Error al obtener envases');
             const envases = await response.json();
             
